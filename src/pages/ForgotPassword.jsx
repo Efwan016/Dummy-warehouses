@@ -12,20 +12,18 @@ const ForgotPassword = ({ onBackToLogin }) => {
         setLoading(true);
         setMessage(null);
 
-        // Simulasi request API
         setTimeout(() => {
             setLoading(false);
             setMessage("We’ve sent a password reset link to your email!");
         }, 1000);
     };
     const handleBackToLogin = () => {
-        navigate("/login"); // ⬅️ balik ke halaman login
+        navigate("/login");
     };
 
 
     return (
         <main className="flex flex-1 h-screen items-center">
-            {/* Bagian Kiri - sama kaya Login */}
             <div className="flex flex-col h-screen overflow-hidden rounded-tr-[32px] pl-[30px] pt-[46px] w-[685px] shrink-0 blue-gradient">
                 <p className="font-semibold text-lg text-monday-lime-green-char">
                   Adzani — Manage Stock and Merchants
@@ -44,7 +42,6 @@ const ForgotPassword = ({ onBackToLogin }) => {
                 </div>
             </div>
 
-            {/* Bagian Kanan - Form Forgot Password */}
             <div className="flex flex-1 items-center justify-center">
                 <form
                     onSubmit={handleForgot}

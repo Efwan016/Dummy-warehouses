@@ -1,24 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Login from "./pages/Login";
 import ForgotPassword from "./pages/ForgotPassword";
-
-function Dashboard({ onLogout }) {
-  return (
-    <div className="h-screen flex flex-col items-center justify-center bg-green-100">
-      <h1 className="text-3xl font-bold text-green-700">Welcome to Dashboard 🎉</h1>
-      <button
-        onClick={onLogout}
-        className="mt-6 px-6 py-2 rounded bg-red-500 text-white hover:bg-red-600"
-      >
-        Logout
-      </button>
-    </div>
-  );
-}
+import Overview from "./pages/Overview";
+import Sidebar from "./components/Sidebar";
+import OverviewMerchant from "./pages/OverviewMerchant";
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+
+  // Biar login persistent
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
+
+  const handleLogin = (username, role) => {
+    const newUser = { username, roles: [role] };
+    localStorage.setItem("user", JSON.stringify(newUser));
+    setUser(newUser);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+  };
 
   return (
     <Router>
@@ -27,29 +35,39 @@ function App() {
         <Route
           path="/login"
           element={
-            isLoggedIn ? (
-              <Navigate to="/dashboard" />
+            user ? (
+              <Navigate to="/overview" replace />
             ) : (
-              <Login onLogin={() => setIsLoggedIn(true)} />
+              <Login onLogin={handleLogin} />
             )
           }
         />
 
-        {/* Dashboard Page */}
+        {/* Overview (Dashboard) */}
         <Route
-          path="/dashboard"
+          path="/overview"
           element={
-            isLoggedIn ? (
-              <Dashboard onLogout={() => setIsLoggedIn(false)} />
+            user ? (
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={handleLogout} />
+                {/* kalau role user merchant → ke OverviewMerchant */}
+                {user.roles.includes("merchant") ? (
+                  <OverviewMerchant />
+                ) : (
+                  <Overview />
+                )}
+              </div>
             ) : (
-              <Navigate to="/login" />
+              <Navigate to="/login" replace />
             )
           }
         />
+
+        {/* Forgot Password */}
         <Route path="/forgot-password" element={<ForgotPassword />} />
 
-        {/* Default route → redirect ke login */}
-        <Route path="*" element={<Navigate to="/login" />} />
+        {/* Default → login */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>
     </Router>
   );
