@@ -1,20 +1,16 @@
 import { useAuth } from "../hooks/useAuth";
-import { useNavigate } from "react-router-dom";
-import { useEffect } from "react";
+import { Navigate } from "react-router-dom";
 
 const ProtectedRoute = ({ children, roles }) => {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
 
-  useEffect(() => {
-    if (loading) return;
-    if (!user) navigate("/login", { replace: true });
-    else if (roles && !user.roles?.some(r => roles.includes(r))) navigate("/unauthorized", { replace: true });
-  }, [user, roles, loading, navigate]);
+  if (!user) return <Navigate to="/login" replace />;
 
-  if (loading || !user || (roles && !user.roles?.some(r => roles.includes(r)))) return null;
+  if (roles && !user.roles?.some(r => roles.includes(r))) {
+    return <Navigate to="/unauthorized" replace />; // redirect jika role tidak cocok
+  }
 
-  return children;
+  return children; // user valid → render children
 };
 
 export default ProtectedRoute;

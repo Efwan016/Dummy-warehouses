@@ -1,11 +1,9 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { products } from "../data/products";
 
 // Global mock
-let initialProducts = [
-  { id: 1, name: "Product A", price: 100, about: "About A", category_id: "1", is_popular: true, thumbnail: "/assets/images/sample-product.jpg", category: { id: "1", name: "Category 1", photo: "/assets/images/icons/category-1.svg" } },
-  { id: 2, name: "Product B", price: 200, about: "About B", category_id: "2", is_popular: false, thumbnail: "/assets/images/sample-product.jpg", category: { id: "2", name: "Category 2", photo: "/assets/images/icons/category-2.svg" } },
-];
+let initialProducts = products
 
 export const useProducts = () => {
   const navigate = useNavigate();

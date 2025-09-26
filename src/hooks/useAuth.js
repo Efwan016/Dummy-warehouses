@@ -1,21 +1,16 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState } from "react";
 
 // 1. Buat context
 const AuthContext = createContext();
 
 // 2. Provider
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true); // biar bisa cek persistent login
-
-  // cek localStorage saat app pertama kali load
-  useEffect(() => {
+  const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
-    setLoading(false);
-  }, []);
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
+
+  const [loading] = useState(true);
 
   // fungsi login
   const login = (username, password) => {
@@ -26,15 +21,15 @@ export const AuthProvider = ({ children }) => {
       newUser = {
         name: "Admin User",
         email: username,
-        roles: ["manager"], // manager role
-        photo: "/assets/images/icons/default-avatar.svg",
+        roles: ["manager"],
+        photo: "/assets/images/avatar/Avatar-1.png",
       };
     } else if (username === "keeper@example.com" && password === "keeper123") {
       newUser = {
         name: "Warehouse Keeper",
         email: username,
-        roles: ["keeper"], // keeper role
-        photo: "/assets/images/icons/default-avatar.svg",
+        roles: ["keeper"],
+        photo: "/assets/images/avatar/Keeper.png",
       };
     }
 
