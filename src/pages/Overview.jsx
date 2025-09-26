@@ -162,8 +162,8 @@ const Overview = () => {
                         Track, Manage, and Distribute Stock Easily! 🎯
                       </p>
                     </div>
-                    <a
-                      href="#"
+                    <button
+                      onClick={() => console.log("Upgrade clicked")}
                       className="flex items-center justify-between rounded-2xl p-4 gap-[10px] bg-white"
                     >
                       <p className="font-semibold">Upgrade Now</p>
@@ -172,7 +172,7 @@ const Overview = () => {
                         className="flex size-6 shrink-0"
                         alt="icon"
                       />
-                    </a>
+                    </button>
                   </div>
                 </div>
 
@@ -193,19 +193,18 @@ const Overview = () => {
                         Download Your Sales Summary Instantly
                       </p>
                     </div>
-                    <a
-                      href="#"
+                    <button
+                      onClick={() => console.log("Download clicked")}
                       className="flex items-center justify-between rounded-2xl p-4 gap-[10px] bg-monday-blue/10"
                     >
-                      <p className="font-semibold text-monday-blue">
-                        Download Now
-                      </p>
+                      <p className="font-semibold text-monday-blue">Download Now</p>
                       <img
                         src="assets/images/icons/arrow-right-blue.svg"
                         className="flex size-6 shrink-0"
                         alt="icon"
                       />
-                    </a>
+                    </button>
+
                   </div>
                 </div>
               </section>
@@ -269,8 +268,8 @@ const Overview = () => {
                           <img
                             src="assets/images/icons/arrow-circle-up.svg"
                             className={`size-6 flex shrink-0 transition-transform duration-300 ${openTransactionIds.includes(tx.id)
-                                ? "rotate-180"
-                                : ""
+                              ? "rotate-180"
+                              : ""
                               }`}
                             alt="icon"
                           />

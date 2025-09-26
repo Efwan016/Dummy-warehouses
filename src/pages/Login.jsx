@@ -1,32 +1,35 @@
 import { useState } from "react";
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth"; // ambil hook
 
-const Login = ({ onLogin }) => {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
-  const handleLogin = (e) => {
+  const { login } = useAuth(); // ambil login dari context
+  const navigate = useNavigate();
+
+  const handleLogin = async (e) => {
     e.preventDefault();
     setError(null);
     setLoading(true);
 
     // Simulasi delay request
     setTimeout(() => {
+      const result = login(email, password); // panggil login context
       setLoading(false);
 
-      // Dummy check (frontend only)
-      if (email === "admin@example.com" && password === "admin123") {
-        onLogin(); // sukses login → pindah ke dashboard
+      if (result.success) {
+        navigate("/overview"); // redirect setelah login sukses
       } else {
-        setError("Email atau password salah!");
+        setError(result.message || "Email atau password salah!");
       }
     }, 1000);
   };
 
   const handleGoogleLogin = () => {
-    // sementara simulasi aja
     alert("Google Login clicked!");
   };
 
@@ -34,7 +37,8 @@ const Login = ({ onLogin }) => {
 
   return (
     <main className="flex flex-1 h-screen items-center">
-     <div className="flex flex-col h-screen overflow-hidden rounded-tr-[32px] pl-[30px] pt-[46px] w-[685px] shrink-0 blue-gradient shadow-2xl border-2 border-gray-200">
+      <div className="flex flex-col h-screen overflow-hidden rounded-tr-[32px] pl-[30px] pt-[46px] w-[685px] shrink-0 blue-gradient shadow-2xl border-2 border-gray-200">
+        {/* Kiri layout */}
         <p className="font-semibold text-lg text-monday-lime-green-char">
           — Manage Stock and Merchants
         </p>
@@ -52,7 +56,7 @@ const Login = ({ onLogin }) => {
         </div>
       </div>
 
-      <div className="flex flex-1 items-center justify-center ">
+      <div className="flex flex-1 items-center justify-center">
         <form
           onSubmit={handleLogin}
           className="flex flex-col w-[435px] shrink-0 rounded-3xl gap-8 p-6 bg-white shadow shadow-2x1 border-2 border-gray-200"
@@ -72,17 +76,17 @@ const Login = ({ onLogin }) => {
             <div className="flex flex-col gap-4 w-full">
               <input
                 required
-                onChange={(e) => setEmail(e.target.value)}
                 type="email"
                 value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 className="w-full h-[50px] border rounded px-3"
                 placeholder="Your email address"
               />
               <input
                 required
-                onChange={(e) => setPassword(e.target.value)}
                 type="password"
                 value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 className="w-full h-[50px] border rounded px-3"
                 placeholder="Your password"
               />
@@ -114,7 +118,7 @@ const Login = ({ onLogin }) => {
             </button>
 
             {error && <p className="text-red-500 text-center">{error}</p>}
-             <Link
+            <Link
               to="/forgot-password"
               className="text-blue-600 hover:underline text-center"
             >

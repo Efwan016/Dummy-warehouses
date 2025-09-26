@@ -11,22 +11,19 @@ const UserProfileCard = () => {
     photo: "/assets/images/icons/user-thin-grey.svg",
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem("user");
-    navigate("/login");
-  };
-
   return (
-    <div className="flex items-center gap-3 h-[72px] bg-white shadow rounded-2xl px-4 py-2">
+    <div
+      className="flex items-center gap-3 h-[72px] bg-white shadow rounded-2xl px-4 py-2 cursor-pointer hover:bg-gray-50 transition-300"
+      onClick={() => navigate("/profile")} // ✅ navigate ke /profile
+    >
       {/* User Photo */}
       <div className="flex rounded-full overflow-hidden size-12">
         <img
-          src={user.photo || "assets/images/icons/user-thin-grey.svg"}
+          src={user.photo || "/assets/images/icons/user-thin-grey.svg"}
           className="size-full object-cover"
           alt="profile"
         />
       </div>
-
 
       {/* User Info */}
       <div className="flex flex-col gap-0.5 min-w-[100px] max-w-[150px] w-fit">
@@ -40,18 +37,6 @@ const UserProfileCard = () => {
           {user.roles.join(", ")}
         </p>
       </div>
-
-      {/* Logout Button */}
-      <button
-        onClick={handleLogout}
-        className="flex w-6 hover:opacity-80 transition"
-      >
-        <img
-          src="/assets/images/icons/logout.svg"
-          className="size-6"
-          alt="logout"
-        />
-      </button>
     </div>
   );
 };

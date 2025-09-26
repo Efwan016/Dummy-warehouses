@@ -45,24 +45,28 @@ const OverviewMerchant = () => {
                                 <h1 className="font-bold text-2xl">Merchant Overview</h1>
                             </div>
                             <div className="flex items-center flex-nowrap gap-3">
-                                <a href="#">
-                                    <div className="flex size-14 rounded-full bg-monday-gray-background items-center justify-center overflow-hidden">
-                                        <img
-                                            src="assets/images/icons/search-normal-black.svg"
-                                            className="size-6"
-                                            alt="icon"
-                                        />
-                                    </div>
-                                </a>
-                                <a href="#">
-                                    <div className="flex size-14 rounded-full bg-monday-gray-background items-center justify-center overflow-hidden">
-                                        <img
-                                            src="assets/images/icons/notification-black.svg"
-                                            className="size-6"
-                                            alt="icon"
-                                        />
-                                    </div>
-                                </a>
+                                <button
+                                    type="button"
+                                    className="flex size-14 rounded-full bg-monday-gray-background items-center justify-center overflow-hidden"
+                                    onClick={() => console.log("Search clicked")}
+                                >
+                                    <img
+                                        src="assets/images/icons/search-normal-black.svg"
+                                        className="size-6"
+                                        alt="Search"
+                                    />
+                                </button>
+                                <button
+                                    type="button"
+                                    className="flex size-14 rounded-full bg-monday-gray-background items-center justify-center overflow-hidden"
+                                    onClick={() => console.log("Notification clicked")}
+                                >
+                                    <img
+                                        src="assets/images/icons/notification-black.svg"
+                                        className="size-6"
+                                        alt="Notification"
+                                    />
+                                </button>
                                 <div className="relative w-fit">
                                     <div className="flex size-14 rounded-full bg-monday-lime-green items-center justify-center overflow-hidden">
                                         <img
