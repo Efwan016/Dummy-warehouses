@@ -8,8 +8,11 @@ import OverviewMerchant from "./pages/OverviewMerchant";
 import ProductList from "./pages/products/ProductList";
 import AddProduct from "./pages/products/AddProduct";
 import EditProduct from "./pages/products/EditProduct";
+import WarehouseList from "./pages/warehouses/WarehouseList";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
+import AddWarehouse from "./pages/warehouses/AddWarehouse";
+import EditWarehouse from "./pages/warehouses/EditWarehouse";
 
 function AppRoutes() {
   const { user, login, logout } = useAuth(); // Ambil user langsung dari context
@@ -93,6 +96,41 @@ function AppRoutes() {
               <div className="flex h-screen">
                 <Sidebar user={user} onLogout={logout} />
                 <EditProduct />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Warehouses Routes */}
+        <Route
+          path="/warehouses"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <WarehouseList />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/warehouses/add"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <AddWarehouse />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/warehouses/edit/:id"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <EditWarehouse />
               </div>
             </ProtectedRoute>
           }

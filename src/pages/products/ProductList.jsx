@@ -1,9 +1,9 @@
 import { Link } from "react-router-dom";
 import { useProducts } from "../../hooks/useProducts";
-import React, { useState } from "react"; 
+import React, { useState } from "react";
 import UserProfileCard from "../../components/UserProfileCard";
 
-const ProductList = () => { 
+const ProductList = () => {
   const { products, getProduct, deleteProduct } = useProducts();
   const [selectedProductId, setSelectedProductId] = useState(null);
   const selectedProduct = selectedProductId ? getProduct(selectedProductId) : null;
@@ -12,6 +12,7 @@ const ProductList = () => {
     <>
       <div id="main-container" className="flex flex-1">
         <div id="Content" className="flex flex-col flex-1 p-6 pt-0">
+          {/* Top Bar */}
           <div
             id="Top-Bar"
             className="flex items-center w-full gap-6 mt-[30px] mb-6"
@@ -26,11 +27,13 @@ const ProductList = () => {
             </div>
           </div>
 
+          {/* Main Content */}
           <main className="flex flex-col gap-6 flex-1">
             <section
               id="Products"
               className="flex flex-col gap-6 flex-1 rounded-3xl p-[18px] px-0 bg-white"
             >
+              {/* Header */}
               <div
                 id="Header"
                 className="flex items-center justify-between px-[18px]"
@@ -54,11 +57,15 @@ const ProductList = () => {
               </div>
               <hr className="border-monday-border" />
 
+              {/* Product List */}
               <div id="Product-List" className="flex flex-col px-4 gap-5 flex-1">
                 {products.length > 0 ? (
                   <div className="flex flex-col gap-5">
                     {products.map((product) => (
-                      <div key={product.id} className="card flex items-center justify-between gap-3">
+                      <div
+                        key={product.id}
+                        className="card flex items-center justify-between gap-3"
+                      >
                         <div className="flex items-center gap-3 w-[380px] shrink-0">
                           <div className="flex size-[86px] rounded-2xl bg-monday-background items-center justify-center overflow-hidden">
                             <img
@@ -68,13 +75,16 @@ const ProductList = () => {
                             />
                           </div>
                           <div className="flex flex-col gap-2 flex-1">
-                            <p className="font-semibold text-xl truncate">{product.name}</p>
+                            <p className="font-semibold text-xl truncate">
+                              {product.name}
+                            </p>
                             <p className="font-semibold text-xl text-monday-blue">
                               Rp {product.price.toLocaleString("id")}
                             </p>
                           </div>
                         </div>
 
+                        {/* Action Buttons */}
                         <div className="flex items-center gap-4">
                           <button
                             onClick={() => setSelectedProductId(product.id)}
@@ -88,6 +98,20 @@ const ProductList = () => {
                           >
                             Edit
                           </Link>
+                          <button
+                            onClick={() => {
+                              if (
+                                window.confirm(
+                                  `Are you sure you want to delete "${product.name}"?`
+                                )
+                              ) {
+                                deleteProduct(product.id);
+                              }
+                            }}
+                            className="btn btn-red min-w-[130px] font-semibold"
+                          >
+                            Delete
+                          </button>
                         </div>
                       </div>
                     ))}
@@ -105,6 +129,7 @@ const ProductList = () => {
         </div>
       </div>
 
+      {/* Product Detail Modal */}
       {selectedProductId && selectedProduct && (
         <div className="modal flex flex-1 items-center justify-center h-full fixed top-0 w-full">
           <div
