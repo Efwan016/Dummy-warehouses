@@ -1,0 +1,92 @@
+import { Link } from "react-router-dom";
+import UserProfileCard from "../../components/UserProfileCard";
+import { categories } from "../../data/categories";  // ✅ import data
+
+const CategoryList = () => {
+    return (
+        <div id="main-container" className="flex flex-1">
+            <div id="Content" className="flex flex-col flex-1 p-6 pt-0">
+                {/* Top Bar */}
+                <div
+                    id="Top-Bar"
+                    className="flex items-center w-full gap-6 mt-[30px] mb-6"
+                >
+                    <div className="flex items-center gap-6 h-[92px] bg-white w-full rounded-3xl p-[18px]">
+                        <div className="flex flex-col gap-[6px] w-full">
+                            <h1 className="font-bold text-2xl">Manage Categories</h1>
+                        </div>
+                    </div>
+                    <UserProfileCard />
+                </div>
+
+                {/* Content */}
+                <main className="flex flex-col gap-6 flex-1">
+                    <section className="flex flex-col gap-6 flex-1 rounded-3xl p-[18px] px-0 bg-white">
+                        <div className="flex items-center justify-between px-[18px]">
+                            <div className="flex flex-col gap-[6px]">
+                                <p className="flex items-center gap-[6px]">
+                                    <span className="font-semibold text-2xl">
+                                        {categories.length} Total Category
+                                    </span>
+                                </p>
+                                <p className="font-semibold text-lg text-monday-gray">
+                                    View and update your Category list here.
+                                </p>
+                            </div>
+                            <Link
+                                to="/categories/add"
+                                className="btn btn-primary font-semibold"
+                            >
+                                Add New
+                            </Link>
+                        </div>
+
+                        <hr className="border-monday-border" />
+
+                        {categories.length > 0 ? (
+                            <div className="flex flex-col gap-5 px-4">
+                                {categories.map((category) => (
+                                    <div
+                                        key={category.id}
+                                        className="card flex items-center justify-between gap-3"
+                                    >
+                                        <div className="flex items-center gap-3">
+                                            <div className="flex size-16 rounded-full bg-monday-background items-center justify-center overflow-hidden">
+                                                <img
+                                                    src={category.photo}
+                                                    className="size-[30px] object-contain"
+                                                    alt="icon"
+                                                />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <p className="font-semibold text-xl">{category.name}</p>
+                                                <p className="font-semibold text-lg text-monday-gray">
+                                                    {category.tagline}
+                                                </p>
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center gap-3">
+                                            <p className="font-semibold text-xl text-center item-center">
+                                                {category.products.length} Products
+                                            </p>
+                                        </div>
+                                        <Link
+                                            to={`/categories/edit/${category.id}`}
+                                            className="btn btn-black font-semibold"
+                                        >
+                                            Edit
+                                        </Link>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <p>No categories yet.</p>
+                        )}
+                    </section>
+                </main>
+            </div>
+        </div>
+    );
+};
+
+export default CategoryList;

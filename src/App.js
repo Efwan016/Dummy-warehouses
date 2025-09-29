@@ -13,6 +13,9 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import AddWarehouse from "./pages/warehouses/AddWarehouse";
 import EditWarehouse from "./pages/warehouses/EditWarehouse";
+import CategoryList from "./pages/categories/CategoryList";
+import AddCategory from "./pages/categories/AddCategory";
+import EditCategory from "./pages/categories/EditCategory";
 
 function AppRoutes() {
   const { user, login, logout } = useAuth(); // Ambil user langsung dari context
@@ -131,6 +134,41 @@ function AppRoutes() {
               <div className="flex h-screen">
                 <Sidebar user={user} onLogout={logout} />
                 <EditWarehouse />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Categories Routes */}
+        <Route
+          path="/categories"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <CategoryList />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/categories/add"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <AddCategory />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/categories/edit/:id"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <EditCategory />
               </div>
             </ProtectedRoute>
           }
