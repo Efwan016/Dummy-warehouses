@@ -5,17 +5,25 @@ import Overview from "./pages/Overview";
 import Sidebar from "./components/Sidebar";
 import Profile from "./pages/Profile";
 import OverviewMerchant from "./pages/OverviewMerchant";
+
 import ProductList from "./pages/products/ProductList";
 import AddProduct from "./pages/products/AddProduct";
 import EditProduct from "./pages/products/EditProduct";
+
 import WarehouseList from "./pages/warehouses/WarehouseList";
-import ProtectedRoute from "./components/ProtectedRoute";
-import { AuthProvider, useAuth } from "./hooks/useAuth";
 import AddWarehouse from "./pages/warehouses/AddWarehouse";
 import EditWarehouse from "./pages/warehouses/EditWarehouse";
+
 import CategoryList from "./pages/categories/CategoryList";
 import AddCategory from "./pages/categories/AddCategory";
 import EditCategory from "./pages/categories/EditCategory";
+
+import MerchantList from "./pages/merchants/MerchantList";
+import AddMerchant from "./pages/merchants/AddMerchant";
+import EditMerchant from "./pages/merchants/EditMerchant";
+
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
 
 function AppRoutes() {
   const { user, login, logout } = useAuth(); // Ambil user langsung dari context
@@ -169,6 +177,41 @@ function AppRoutes() {
               <div className="flex h-screen">
                 <Sidebar user={user} onLogout={logout} />
                 <EditCategory />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* Merchants Routes */}
+        <Route
+          path="/merchants"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <MerchantList />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/merchants/add"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <AddMerchant />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/merchants/edit/:id"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <EditMerchant />
               </div>
             </ProtectedRoute>
           }

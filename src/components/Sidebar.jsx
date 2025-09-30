@@ -58,6 +58,13 @@ const Sidebar = () => {
           iconBlue: "/assets/images/icons/buildings-2-blue-fill.svg",
           roles: ["manager"],
         },
+        {
+          label: "Merchants",
+          path: "/merchants",
+          iconBlack: "/assets/images/icons/shop-black.svg",
+          iconBlue: "/assets/images/icons/shop-blue-fill.svg",
+          roles: ["manager"],
+        },
       ],
     },
     {
