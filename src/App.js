@@ -24,6 +24,9 @@ import EditMerchant from "./pages/merchants/EditMerchant";
 
 import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
+import UserList from "./pages/users/UserList";
+import AddUser from "./pages/users/AddUser";
+import EditUser from "./pages/users/EditUser";
 
 function AppRoutes() {
   const { user, login, logout } = useAuth(); // Ambil user langsung dari context
@@ -212,6 +215,41 @@ function AppRoutes() {
               <div className="flex h-screen">
                 <Sidebar user={user} onLogout={logout} />
                 <EditMerchant />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        {/* User Management Routes */}
+        <Route
+          path="/users"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <UserList />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users/add"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <AddUser />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/users/edit/:id"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <EditUser />
               </div>
             </ProtectedRoute>
           }
