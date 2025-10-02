@@ -1,99 +1,66 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import apiClient from "../api/axiosConfig";
-import { useNavigate } from "react-router-dom";
+// src/hooks/useUsers.js
+import { useState, useEffect } from "react";
 
-// Fetch All Users
+const USERS_KEY = "users";
+
 export const useFetchUsers = () => {
-  return useQuery({
-    queryKey: ["users"],
-    queryFn: async () => {
-      const response = await apiClient.get("/api/users");
-      return response.data;
-    },
-  });
+  const [data, setData] = useState([]);
+  const [isPending, setIsPending] = useState(true);
+
+  useEffect(() => {
+    const storedUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+    setData(storedUsers);
+    setIsPending(false);
+  }, []);
+
+  return { data, isPending };
 };
 
-// Fetch Single User by ID
 export const useFetchUser = (id) => {
-  return useQuery({
-    queryKey: ["user", id],
-    queryFn: async () => {
-      const response = await apiClient.get(`/users/${id}`);
-      return response.data;
-    },
-    enabled: !!id,
-  });
+  const [data, setData] = useState(null);
+
+  useEffect(() => {
+    if (!id) return;
+    const storedUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+    const found = storedUsers.find((u) => u.id === id);
+    setData(found || null);
+  }, [id]);
+
+  return { data };
 };
 
 export const useCreateUser = () => {
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const mutate = (payload, { onSuccess } = {}) => {
+    const storedUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+    const newUser = { id: Date.now(), ...payload };
+    const updated = [...storedUsers, newUser];
+    localStorage.setItem(USERS_KEY, JSON.stringify(updated));
 
-  return useMutation({
-    mutationFn: async (payload) => {
-      const formData = new FormData();
-      formData.append("name", payload.name);
-      formData.append("phone", payload.phone);
-      formData.append("email", payload.email);
-      formData.append("password", payload.password);
-      formData.append("password_confirmation", payload.password_confirmation);
-      formData.append("photo", payload.photo);
-
-      const response = await apiClient.post("/users", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      return response.data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      navigate("/users");
-    },
-  });
+    if (onSuccess) onSuccess(newUser);
+  };
+  return { mutate };
 };
 
 export const useUpdateUser = () => {
-  const queryClient = useQueryClient();
-  const navigate = useNavigate();
+  const mutate = ({ id, ...payload }, { onSuccess } = {}) => {
+    const storedUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+    const updated = storedUsers.map((u) =>
+      u.id === id ? { ...u, ...payload } : u
+    );
+    localStorage.setItem(USERS_KEY, JSON.stringify(updated));
 
-  return useMutation({
-    mutationFn: async ({ id, ...payload }) => {
-      const formData = new FormData();
-      formData.append("name", payload.name);
-      formData.append("phone", payload.phone);
-      formData.append("email", payload.email);
-      formData.append("password", payload.password);
-      formData.append("password_confirmation", payload.password_confirmation);
-
-      formData.append("_method", "PUT"); // Laravel expects this
-
-      if (payload.photo) {
-        formData.append("photo", payload.photo);
-      }
-
-      const response = await apiClient.post(`/users/${id}`, formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      return response.data;
-    },
-    onSuccess: (_, { id }) => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-      queryClient.invalidateQueries({ queryKey: ["user", id] });
-      navigate("/users");
-    },
-  });
+    if (onSuccess) onSuccess();
+  };
+  return { mutate };
 };
 
-// Delete User
 export const useDeleteUser = () => {
-  const queryClient = useQueryClient();
+  const mutate = (id, { onSuccess } = {}) => {
+    const storedUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+    const updated = storedUsers.filter((u) => u.id !== id);
+    localStorage.setItem(USERS_KEY, JSON.stringify(updated));
 
-  return useMutation({
-    mutationFn: async (id) => {
-      await apiClient.delete(`/users/${id}`);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["users"] });
-    },
-  });
+    if (onSuccess) onSuccess();
+  };
+  return { mutate };
 };

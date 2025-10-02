@@ -22,11 +22,18 @@ import MerchantList from "./pages/merchants/MerchantList";
 import AddMerchant from "./pages/merchants/AddMerchant";
 import EditMerchant from "./pages/merchants/EditMerchant";
 
-import ProtectedRoute from "./components/ProtectedRoute";
-import { AuthProvider, useAuth } from "./hooks/useAuth";
 import UserList from "./pages/users/UserList";
 import AddUser from "./pages/users/AddUser";
 import EditUser from "./pages/users/EditUser";
+
+import RoleList from "./pages/roles/RoleList";
+import AddRole from "./pages/roles/AddRole";
+import EditRole from "./pages/roles/EditRole";
+
+import ProtectedRoute from "./components/ProtectedRoute";
+import { AuthProvider, useAuth } from "./hooks/useAuth";
+import AssignUserRole from "./pages/user_roles/AssignUSerRoles";
+
 
 function AppRoutes() {
   const { user, login, logout } = useAuth(); // Ambil user langsung dari context
@@ -220,6 +227,41 @@ function AppRoutes() {
           }
         />
 
+        {/* Roles Management Routes */}
+        <Route
+          path="/roles"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <RoleList />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/roles/add"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <AddRole />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/roles/edit/:id"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <EditRole />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
         {/* User Management Routes */}
         <Route
           path="/users"
@@ -250,6 +292,18 @@ function AppRoutes() {
               <div className="flex h-screen">
                 <Sidebar user={user} onLogout={logout} />
                 <EditUser />
+              </div>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/users/assign-roles"
+          element={
+            <ProtectedRoute roles={["manager"]}>
+              <div className="flex h-screen">
+                <Sidebar user={user} onLogout={logout} />
+                <AssignUserRole />
               </div>
             </ProtectedRoute>
           }

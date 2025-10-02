@@ -1,70 +1,94 @@
-# Getting Started with Create React App
+# 🏭 Warehouses Management App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A warehouse & user management system built with **React**, **TailwindCSS**, and **React Router**.  
+This project demonstrates CRUD operations, state management, and reusable UI components with a focus on scalability and clean code.
 
-## Available Scripts
+---
 
-In the project directory, you can run:
+## ✨ Features
 
-### `npm start`
+### 🏢 Warehouses
+- Add new warehouses  
+- Edit warehouse details  
+- Delete warehouses  
+- List all warehouses  
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 📦 Products
+- Add, edit, delete, and list products  
+- Stock management per warehouse  
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 🧑‍🤝‍🧑 Users
+- Add, edit, delete, and list users with persistence  
+- Dynamic routing with `/users/edit/:id`  
+- Validation using **Zod + React Hook Form**  
 
-### `npm test`
+### 📂 Categories & Merchants
+- Full CRUD operations  
+- Consistent UI/UX design  
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+---
 
-### `npm run build`
+## 🛠️ Tech Stack
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+- **Frontend**: React 18, React Router, TailwindCSS  
+- **State Management**: React Hooks (`useState`, `useEffect`, `useContext`)  
+- **Validation**: [Zod](https://zod.dev/) + React Hook Form  
+- **Persistence**: LocalStorage (can be swapped with API/Database later)  
+- **UI Components**: Reusable components (e.g., `UserProfileCard`)  
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+---
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🚀 Getting Started
 
-### `npm run eject`
+### 1. Clone the repository
+```bash
+git clone https://github.com/Efwan016/Dummy-warehouses
+cd warehouses-store
+2. Install dependencies
+bash
+Copy code
+npm install
+3. Run the app
+bash
+Copy code
+npm run dev
+📖 Project Structure
+bash
+Copy code
+src/
+├── components/        # Reusable components (UserProfileCard, Sidebar, etc.)
+├── pages/
+│   ├── products/      # Product CRUD pages
+│   ├── warehouses/    # Warehouse CRUD pages
+│   ├── users/         # User CRUD pages
+│   ├── categories/    # Category CRUD pages
+│   ├── merchants/     # Merchant CRUD pages
+│   └── auth/          # Login, Forgot Password
+├── hooks/             # Custom hooks (useAuth, etc.)
+├── api/               # Axios config (future API integration)
+└── App.jsx            # Main routing setup
+📝 Milestones
+✅ Built Warehouse Section with modal & CRUD operations
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+✅ Implemented Product Management linked to warehouses
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+✅ Added User Management Section with Zod validation
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+✅ Integrated Role-based Protected Routes
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+✅ Designed scalable UI with TailwindCSS
 
-## Learn More
+📌 Roadmap
+ Replace LocalStorage with REST API / Database (e.g., Laravel backend)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+ Add Authentication & Authorization
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+ Implement Search & Filtering
 
-### Code Splitting
+ Dark Mode Support
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+🤝 Contributing
+Pull requests are welcome! For major changes, please open an issue first to discuss what you’d like to change.
 
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+📜 License
+MIT License © 2025 Efwan Rizaldi
