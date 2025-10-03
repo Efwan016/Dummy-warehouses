@@ -34,6 +34,12 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import { AuthProvider, useAuth } from "./hooks/useAuth";
 import AssignUserRole from "./pages/user_roles/AssignUSerRoles";
 
+import TransactionProvider from "./pages/providers/TransactionProvider";
+import TransactionList from "./pages/transactions/TransactionsList";
+import AddTransaction from "./pages/transactions/AddTransaction";
+import TransactionDetails from "./pages/transactions/TransactionDetails";
+import TransactionSuccess from "./pages/transactions/TransactionSuccess";
+
 
 function AppRoutes() {
   const { user, login, logout } = useAuth(); // Ambil user langsung dari context
@@ -226,6 +232,19 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
+
+        <Route path="/transactions" element={<ProtectedRoute roles={['keeper']}><TransactionList /></ProtectedRoute>} />
+        <Route path="/transactions/add" element={
+          <ProtectedRoute roles={['keeper']}>
+            <TransactionProvider> {/* ✅ Wrap only the Add Transaction page */}
+              <AddTransaction />
+            </TransactionProvider>
+          </ProtectedRoute>
+        } />
+        <Route path="/transactions/details/:id" element={<ProtectedRoute roles={['keeper']}><TransactionDetails /></ProtectedRoute>} />
+        <Route path="/transactions/success" element={<ProtectedRoute roles={['keeper']}><TransactionSuccess /></ProtectedRoute>} />
+
+
 
         {/* Roles Management Routes */}
         <Route

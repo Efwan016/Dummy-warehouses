@@ -1,19 +1,15 @@
 import { useState } from "react";
-import {
-  getMerchants,
-  getMerchantById,
-  deleteMerchant as removeMerchant,
-} from "../data/merchants";
+import { getMerchants, getMerchantById, deleteMerchant as removeMerchant } from "../data/merchants";
 
 export const useMerchants = () => {
-  const [data, setData] = useState(getMerchants());
+  const [merchants, setMerchants] = useState(getMerchants());
 
   const getMerchant = (id) => getMerchantById(id);
 
   const deleteMerchant = (id) => {
     removeMerchant(id);
-    setData(getMerchants()); // refresh state setelah hapus
+    setMerchants(getMerchants());
   };
 
-  return { merchants: data, getMerchant, deleteMerchant };
+  return { merchants, getMerchant, deleteMerchant };
 };

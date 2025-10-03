@@ -2,6 +2,7 @@
 import { useState } from "react";
 
 const USERS_KEY = "users";
+const ROLES_KEY = "roles";
 
 export const useAssignUserRole = () => {
   const [isPending, setIsPending] = useState(false);
@@ -13,10 +14,20 @@ export const useAssignUserRole = () => {
       setError(null);
 
       const storedUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
-      const updated = storedUsers.map((u) =>
-        u.id === user_id ? { ...u, roleId: role_id } : u
+      const storedRoles = JSON.parse(localStorage.getItem(ROLES_KEY)) || [];
+
+      // cari role dari localStorage
+      const selectedRole = storedRoles.find((r) => r.id === role_id);
+      if (!selectedRole) throw new Error("Role not found");
+
+      // update user
+      const updatedUsers = storedUsers.map((u) =>
+        u.id === user_id
+          ? { ...u, roleId: role_id, roles: [selectedRole.name] }
+          : u
       );
-      localStorage.setItem(USERS_KEY, JSON.stringify(updated));
+
+      localStorage.setItem(USERS_KEY, JSON.stringify(updatedUsers));
 
       setIsPending(false);
       if (onSuccess) onSuccess();

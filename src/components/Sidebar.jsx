@@ -21,7 +21,7 @@ const Sidebar = () => {
     {
       section: "Main Menu",
       items: [
-        {
+       {
           label: "Overview",
           path: "/overview",
           iconBlack: "/assets/images/icons/home-black.svg",
@@ -108,7 +108,7 @@ const Sidebar = () => {
               iconBlue: "/assets/images/icons/profile-tick-blue.svg",
             },
           ],
-        },
+        }, 
         {
           label: "Settings",
           path: "/settings",

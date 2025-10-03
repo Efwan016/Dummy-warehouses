@@ -28,14 +28,12 @@ export let merchants = [
   },
 ];
 
-// ✅ ambil semua
 export const getMerchants = () => merchants;
 
-// ✅ ambil by ID
-export const getMerchantById = (id) =>
-  merchants.find((m) => m.id === Number(id));
+// Ambil by ID
+export const getMerchantById = (id) => merchants.find((m) => m.id === Number(id));
 
-// ✅ tambah merchant
+// Tambah merchant
 export const addMerchant = (newMerchant) => {
   const id = merchants.length ? merchants[merchants.length - 1].id + 1 : 1;
   const merchant = { id, products: [], ...newMerchant };
@@ -43,7 +41,7 @@ export const addMerchant = (newMerchant) => {
   return merchant;
 };
 
-// ✅ update merchant
+// Update merchant
 export const updateMerchant = (id, updatedData) => {
   const index = merchants.findIndex((m) => m.id === Number(id));
   if (index !== -1) {
@@ -53,7 +51,7 @@ export const updateMerchant = (id, updatedData) => {
   return null;
 };
 
-// ✅ hapus merchant
+// Hapus merchant
 export const deleteMerchant = (id) => {
   merchants = merchants.filter((m) => m.id !== Number(id));
 };
