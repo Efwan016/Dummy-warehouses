@@ -7,6 +7,19 @@ const USERS_KEY = "users";
 export const useRoles = () => {
   const [roles, setRoles] = useState([]);
 
+  // helper biar setiap kali update role → ikut rebuild user count
+  const buildRolesWithUsers = (roles) => {
+    const storedUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
+    return roles.map((role) => {
+      const usersInRole = storedUsers.filter((user) => user.roleId === role.id);
+      return {
+        ...role,
+        users_web_count: usersInRole.length,
+        users: usersInRole,
+      };
+    });
+  };
+
   useEffect(() => {
     let storedRoles = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 
@@ -19,19 +32,7 @@ export const useRoles = () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(storedRoles));
     }
 
-    const storedUsers = JSON.parse(localStorage.getItem(USERS_KEY)) || [];
-
-    // hitung jumlah user per role + simpan list user
-    const rolesWithUsers = storedRoles.map((role) => {
-      const usersInRole = storedUsers.filter((user) => user.roleId === role.id);
-      return { 
-        ...role, 
-        users_web_count: usersInRole.length,
-        users: usersInRole // simpan list usernya
-      };
-    });
-
-    setRoles(rolesWithUsers);
+    setRoles(buildRolesWithUsers(storedRoles));
   }, []);
 
   const addRole = (role) => {
@@ -39,7 +40,7 @@ export const useRoles = () => {
     const newRole = { id: Date.now(), ...role };
     const updated = [...storedRoles, newRole];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    setRoles(updated);
+    setRoles(buildRolesWithUsers(updated)); // ← pakai helper
   };
 
   const updateRole = (id, updatedRole) => {
@@ -48,7 +49,7 @@ export const useRoles = () => {
       role.id === id ? { ...role, ...updatedRole } : role
     );
     localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
-    setRoles(updated);
+    setRoles(buildRolesWithUsers(updated)); // ← pakai helper
   };
 
   const getRoleById = (id) => {

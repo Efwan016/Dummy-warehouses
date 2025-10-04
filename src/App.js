@@ -5,6 +5,7 @@ import Overview from "./pages/Overview";
 import Sidebar from "./components/Sidebar";
 import Profile from "./pages/Profile";
 import OverviewMerchant from "./pages/OverviewMerchant";
+import MyMerchantProfile from "./pages/MyMerchantProfile";
 
 import ProductList from "./pages/products/ProductList";
 import AddProduct from "./pages/products/AddProduct";
@@ -40,9 +41,8 @@ import AddTransaction from "./pages/transactions/AddTransaction";
 import TransactionDetails from "./pages/transactions/TransactionDetails";
 import TransactionSuccess from "./pages/transactions/TransactionSuccess";
 
-
 function AppRoutes() {
-  const { user, login, logout } = useAuth(); // Ambil user langsung dari context
+  const { user, login, logout } = useAuth();
 
   return (
     <Router>
@@ -59,7 +59,7 @@ function AppRoutes() {
           }
         />
 
-        {/* Overview (Dashboard) */}
+        {/* Overview */}
         <Route
           path="/overview"
           element={
@@ -90,6 +90,24 @@ function AppRoutes() {
             ) : (
               <Navigate to="/login" replace />
             )
+          }
+        />
+
+        {/* Protected Routes for Keeper */}
+        <Route
+          path="/overview-merchant"
+          element={
+            <ProtectedRoute roles={["keeper"]}>
+              <OverviewMerchant />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/my-merchant"
+          element={
+            <ProtectedRoute roles={["keeper"]}>
+              <MyMerchantProfile />
+            </ProtectedRoute>
           }
         />
 
@@ -128,7 +146,7 @@ function AppRoutes() {
           }
         />
 
-        {/* Warehouses Routes */}
+        {/* Warehouses */}
         <Route
           path="/warehouses"
           element={
@@ -163,7 +181,7 @@ function AppRoutes() {
           }
         />
 
-        {/* Categories Routes */}
+        {/* Categories */}
         <Route
           path="/categories"
           element={
@@ -198,7 +216,7 @@ function AppRoutes() {
           }
         />
 
-        {/* Merchants Routes */}
+        {/* Merchants */}
         <Route
           path="/merchants"
           element={
@@ -233,20 +251,43 @@ function AppRoutes() {
           }
         />
 
-        <Route path="/transactions" element={<ProtectedRoute roles={['keeper']}><TransactionList /></ProtectedRoute>} />
-        <Route path="/transactions/add" element={
-          <ProtectedRoute roles={['keeper']}>
-            <TransactionProvider> {/* ✅ Wrap only the Add Transaction page */}
-              <AddTransaction />
-            </TransactionProvider>
-          </ProtectedRoute>
-        } />
-        <Route path="/transactions/details/:id" element={<ProtectedRoute roles={['keeper']}><TransactionDetails /></ProtectedRoute>} />
-        <Route path="/transactions/success" element={<ProtectedRoute roles={['keeper']}><TransactionSuccess /></ProtectedRoute>} />
+        {/* Transactions */}
+        <Route
+          path="/transactions"
+          element={
+            <ProtectedRoute roles={["keeper"]}>
+              <TransactionList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/add"
+          element={
+            <ProtectedRoute roles={["keeper"]}>
+              <TransactionProvider>
+                <AddTransaction />
+              </TransactionProvider>
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/details/:id"
+          element={
+            <ProtectedRoute roles={["keeper"]}>
+              <TransactionDetails />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/transactions/success"
+          element={
+            <ProtectedRoute roles={["keeper"]}>
+              <TransactionSuccess />
+            </ProtectedRoute>
+          }
+        />
 
-
-
-        {/* Roles Management Routes */}
+        {/* Roles */}
         <Route
           path="/roles"
           element={
@@ -281,7 +322,7 @@ function AppRoutes() {
           }
         />
 
-        {/* User Management Routes */}
+        {/* Users */}
         <Route
           path="/users"
           element={
@@ -315,7 +356,6 @@ function AppRoutes() {
             </ProtectedRoute>
           }
         />
-
         <Route
           path="/users/assign-roles"
           element={

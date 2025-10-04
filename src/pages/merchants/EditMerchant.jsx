@@ -53,15 +53,23 @@ const EditMerchant = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    if (!formData.name || !formData.keeper) {
+      alert("Please fill merchant name and keeper!");
+      return;
+    }
+
     updateMerchant(id, {
+      id, // biar tetap ada ID
       name: formData.name,
       phone: formData.phone,
       keeper: { name: formData.keeper },
       address: formData.address,
       photo: formData.photo,
     });
-    navigate("/merchants"); // balik ke list
+
+    navigate("/merchants");
   };
+
 
   if (!merchant) return <p>Merchant not found</p>;
 

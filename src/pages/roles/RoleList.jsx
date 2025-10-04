@@ -7,12 +7,14 @@ const RoleList = () => {
   const { roles } = useRoles();
   const [expandedRole, setExpandedRole] = useState(null); // track role yang dibuka
 
+
   const handleToggle = (roleId) => {
     setExpandedRole(expandedRole === roleId ? null : roleId);
   };
 
   // ambil data users dari localStorage
   const storedUsers = JSON.parse(localStorage.getItem("users")) || [];
+  const storedMerchants = JSON.parse(localStorage.getItem("merchants")) || [];
 
   return (
     <div id="main-container" className="flex flex-1">
@@ -102,13 +104,13 @@ const RoleList = () => {
                           </div>
 
                           <Link
-                              to={`/roles/edit/${role.id}`}
-                              className="btn btn-black min-w-[130px] font-semibold"
-                            >
-                              Edit
-                            </Link>
+                            to={`/roles/edit/${role.id}`}
+                            className="btn btn-black min-w-[130px] font-semibold"
+                          >
+                            Edit
+                          </Link>
                         </div>
-                        
+
                         {/* Expanded list user */}
                         {expandedRole === role.id && (
                           <div className="bg-gray-50 rounded-xl p-4 mt-2">
@@ -117,17 +119,26 @@ const RoleList = () => {
                               <ul className="list-disc list-inside">
                                 {storedUsers
                                   .filter((u) => u.roleId === role.id)
-                                  .map((u) => (
-                                    <li key={u.id}>
-                                      {u.name} ({u.email})
-                                    </li>
-                                  ))}
+                                  .map((u) => {
+                                    const merchant = storedMerchants.find((m) => m.id === u.merchant_id);
+                                    return (
+                                      <li key={u.id}>
+                                        {u.name} ({u.email})
+                                        {merchant && (
+                                          <span className="text-sm text-gray-500 ml-2">
+                                            → Merchant: {merchant.name}
+                                          </span>
+                                        )}
+                                      </li>
+                                    );
+                                  })}
                               </ul>
                             ) : (
                               <p className="text-gray-500">No users assigned to this role.</p>
                             )}
                           </div>
                         )}
+
                       </div>
                       <hr className="border-monday-border last:hidden" />
                     </React.Fragment>

@@ -1,9 +1,15 @@
 import UserProfileCard from "../../components/UserProfileCard";
 import { useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { addMerchant } from "../../data/merchants";
+import { useMerchants } from "../../hooks/useMerchants";
+
+
 
 const AddMerchant = () => {
+  
+const { addMerchant } = useMerchants();
+
+  
   const [imagePreview, setImagePreview] = useState(
     "/assets/images/icons/gallery-grey.svg"
   );
@@ -39,15 +45,20 @@ const AddMerchant = () => {
       alert("Please fill merchant name and keeper!");
       return;
     }
+
     addMerchant({
+      id: Date.now(),
       name: formData.name,
+      photo: formData.photo,
       keeper: { name: formData.keeper },
       phone: formData.phone,
       address: formData.address,
-      photo: formData.photo,
+      products: [],
     });
+
     navigate("/merchants"); // balik ke list
   };
+
 
   return (
     <div id="main-container" className="flex flex-1">

@@ -5,7 +5,7 @@ import { useFetchAllTransactions } from "../hooks/useDummyTransactions";
 import { useFetchProduct } from "../hooks/useDummyProducts";
 
 const OverviewMerchant = () => {
-    const { transactions } = useFetchAllTransactions();
+    const { transactions = [] } = useFetchAllTransactions();
     const { getProductById } = useFetchProduct();
 
 
