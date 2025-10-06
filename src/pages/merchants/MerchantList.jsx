@@ -69,7 +69,7 @@ const MerchantList = () => {
                                                             className="size-6"
                                                             alt="icon"
                                                         />
-                                                        <span>{merchant.keeper.name}</span>
+                                                        <span>{merchant.keeper?.name || "No keeper assigned"}</span>
                                                     </p>
                                                 </div>
                                             </div>
@@ -153,8 +153,9 @@ const MerchantList = () => {
                                             <div className="flex flex-col">
                                                 <p className="font-semibold text-lg">{selectedMerchant.name}</p>
                                                 <p className="text-monday-gray">
-                                                    Keeper: {selectedMerchant.keeper.name}
+                                                    Keeper: {selectedMerchant.keeper?.name || "No keeper assigned"}
                                                 </p>
+
                                                 <p className="text-monday-gray">
                                                     Phone: {selectedMerchant.phone}
                                                 </p>

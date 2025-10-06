@@ -9,9 +9,37 @@ const MyMerchantProfile = () => {
 
   // Ambil merchant dari localStorage
   useEffect(() => {
-    const storedMerchant = JSON.parse(localStorage.getItem("merchant"));
-    setMerchant(storedMerchant);
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+    const merchants = JSON.parse(localStorage.getItem("merchants")) || [];
+
+    console.log("Current User:", currentUser);
+    console.log("All Merchants:", merchants);
+
+    if (
+      currentUser &&
+      (currentUser.role === "keeper" || currentUser.roles?.includes("keeper"))
+    ) {
+      let assignedMerchant = merchants.find(
+        (m) => String(m.keeper?.id) === String(currentUser.id)
+      );
+
+      // fallback cari dari merchant_id
+      if (!assignedMerchant && currentUser.merchant_id) {
+        assignedMerchant = merchants.find(
+          (m) => String(m.id) === String(currentUser.merchant_id)
+        );
+      }
+
+      if (assignedMerchant) {
+        setMerchant(assignedMerchant);
+        localStorage.setItem("merchant", JSON.stringify(assignedMerchant));
+      }
+    } else {
+      const storedMerchant = JSON.parse(localStorage.getItem("merchant"));
+      setMerchant(storedMerchant);
+    }
   }, []);
+
 
   // Ambil produk yang dipilih
   useEffect(() => {

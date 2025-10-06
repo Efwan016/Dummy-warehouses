@@ -6,8 +6,7 @@ import UserProfileCard from "../../components/UserProfileCard";
 const EditMerchant = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-
-  const merchant = getMerchantById(id);
+  const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -21,13 +20,12 @@ const EditMerchant = () => {
     "/assets/images/icons/gallery-grey.svg"
   );
 
-  const fileInputRef = useRef(null);
-
-  // ✅ isi form dengan data merchant saat pertama load
+  // ✅ Ambil data merchant dari localStorage saat mount
   useEffect(() => {
+    const merchant = getMerchantById(id);
     if (merchant) {
       setFormData({
-        name: merchant.name,
+        name: merchant.name || "",
         phone: merchant.phone || "",
         keeper: merchant.keeper?.name || "",
         address: merchant.address || "",
@@ -35,7 +33,7 @@ const EditMerchant = () => {
       });
       setImagePreview(merchant.photo || "/assets/images/icons/gallery-grey.svg");
     }
-  }, [merchant]);
+  }, [id]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -58,8 +56,8 @@ const EditMerchant = () => {
       return;
     }
 
-    updateMerchant(id, {
-      id, // biar tetap ada ID
+    updateMerchant(String(id), {
+      id: String(id),
       name: formData.name,
       phone: formData.phone,
       keeper: { name: formData.keeper },
@@ -70,17 +68,11 @@ const EditMerchant = () => {
     navigate("/merchants");
   };
 
-
-  if (!merchant) return <p>Merchant not found</p>;
-
   return (
     <div id="main-container" className="flex flex-1">
       <div id="Content" className="flex flex-col flex-1 p-6 pt-0">
         {/* Top Bar */}
-        <div
-          id="Top-Bar"
-          className="flex items-center w-full gap-6 mt-[30px] mb-6"
-        >
+        <div id="Top-Bar" className="flex items-center w-full gap-6 mt-[30px] mb-6">
           <div className="flex items-center gap-6 h-[92px] bg-white w-full rounded-3xl p-[18px]">
             <div className="flex flex-col gap-[6px] w-full">
               <h1 className="font-bold text-2xl">Edit Merchant</h1>
