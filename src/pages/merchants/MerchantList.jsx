@@ -81,8 +81,8 @@ const MerchantList = () => {
                                                     className="size-6"
                                                     alt="icon"
                                                 />
-                                                <p className="font-semibold text-lg text-nowrap">
-                                                    {merchant.products.length} Products
+                                                <p className="font-semibold text-lg">
+                                                    {merchant.productIds?.length || 0} Products
                                                 </p>
                                             </div>
 

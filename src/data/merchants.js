@@ -1,36 +1,34 @@
 // src/data/merchants.js
 const STORAGE_KEY = "merchants";
 
-// Ambil semua merchants
+// ✅ ambil semua merchant dari localStorage
 export const getMerchants = () => {
-  const merchants = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-  return merchants;
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 };
 
-// Ambil by id
+// ✅ ambil merchant berdasarkan id
 export const getMerchantById = (id) => {
   const merchants = getMerchants();
-  return merchants.find((m) => String(m.id) === String(id));
+  return merchants.find((m) => m.id === id);
 };
 
-// Add merchant
+// ✅ tambah merchant baru tanpa menghapus data lama
 export const addMerchant = (merchant) => {
   const merchants = getMerchants();
-  merchants.push(merchant);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(merchants));
+  const updated = [...merchants, merchant];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
 };
 
-// Update merchant
+// ✅ update merchant berdasarkan id
 export const updateMerchant = (id, updatedData) => {
-  let merchants = getMerchants();
-  merchants = merchants.map((m) =>
-    String(m.id) === String(id) ? { ...m, ...updatedData } : m
+  const merchants = getMerchants().map((m) =>
+    m.id === id ? { ...m, ...updatedData } : m
   );
   localStorage.setItem(STORAGE_KEY, JSON.stringify(merchants));
 };
-// Delete merchant
+
+// ✅ hapus merchant berdasarkan id
 export const deleteMerchant = (id) => {
-  let merchants = getMerchants();
-  merchants = merchants.filter((m) => String(m.id) !== String(id));
+  const merchants = getMerchants().filter((m) => m.id !== id);
   localStorage.setItem(STORAGE_KEY, JSON.stringify(merchants));
 };

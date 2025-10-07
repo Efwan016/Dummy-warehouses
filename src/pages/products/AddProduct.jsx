@@ -1,25 +1,28 @@
 import { useState, useRef } from "react";
 import { Link } from "react-router-dom";
 import { useProducts } from "../../hooks/useProducts";
+import { useLocalData } from "../../hooks/useLocalData";
 import UserProfileCard from "../../components/UserProfileCard";
+import { useNavigate } from "react-router-dom";
+import { toBase64 } from "../../utils/toBase64.js";
 
 const AddProduct = () => {
   const fileInputRef = useRef(null);
+  const navigate = useNavigate();
   const { createProduct } = useProducts();
 
-  const categories = [
-    { id: "1", name: "Category 1" },
-    { id: "2", name: "Category 2" },
-    { id: "3", name: "Category 3" },
-  ];
+  const { data: categories } = useLocalData("categories");
+  const { data: warehouses } = useLocalData("warehouses");
+  const { data: merchants } = useLocalData("merchants");
 
   const [formData, setFormData] = useState({
     name: "",
     price: "",
     about: "",
-    category_id: "1",
-    is_popular: "false",
-    thumbnail: null,
+    category_id: "",
+    warehouse_id: "",
+    merchant_id: "",
+    stock: "",
   });
 
   const [imagePreview, setImagePreview] = useState("/assets/images/icons/gallery-grey.svg");
@@ -29,84 +32,171 @@ const AddProduct = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      setFormData({ ...formData, thumbnail: file });
-      setImagePreview(URL.createObjectURL(file));
-    } else {
-      setImagePreview("/assets/images/icons/gallery-grey.svg");
+      const base64 = await toBase64(file);
+      setFormData({ ...formData, thumbnail: base64 });
+      setImagePreview(base64);
     }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    createProduct({ ...formData, is_popular: formData.is_popular === "true" });
+    createProduct({ ...formData, id: Date.now(), photo: formData.thumbnail }); 
+    navigate("/products");
   };
 
+
   return (
-    <div id="main-container" className="flex flex-1">
-      <div id="Content" className="flex flex-col flex-1 p-6 pt-0">
-        <div className="flex items-center gap-6 h-[92px] bg-white w-full rounded-3xl p-[18px]">
-          <div className="flex flex-col gap-[6px] w-full">
-            <h1 className="font-bold text-2xl">Add New Product</h1>
-            <Link to={"/products"} className="flex items-center gap-[6px] text-monday-gray font-semibold">
-              <img src="/assets/images/icons/arrow-left-grey.svg" className="size-4 flex shrink-0" alt="icon" />
-              Manage Products
+    <div id="main-container" className="flex flex-1 bg-gray-50 min-h-screen">
+      <div id="Content" className="flex flex-col flex-1 p-8">
+        {/* Header */}
+        <div className="flex items-center justify-between bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
+          <div>
+            <h1 className="font-semibold text-2xl text-gray-800">🛒 Add New Product</h1>
+            <Link
+              to="/products"
+              className="text-sm text-gray-500 hover:text-indigo-500 transition-all"
+            >
+              ← Back to Products
             </Link>
           </div>
           <UserProfileCard />
         </div>
 
-        <form onSubmit={handleSubmit} className="flex flex-col w-full rounded-3xl p-[18px] gap-5 bg-white">
-          <h2 className="font-semibold text-xl capitalize">Complete the form</h2>
-
-          {/* Image Upload */}
-          <div className="flex items-center gap-4">
-            <div className="group relative flex size-[100px] rounded-2xl overflow-hidden items-center justify-center bg-monday-background">
-              <img src={imagePreview} className="size-full object-cover" alt="icon" />
+        {/* Form Section */}
+        <form
+          onSubmit={handleSubmit}
+          className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mt-8 max-w-3xl mx-auto"
+        >
+          {/* Upload */}
+          <div className="flex items-center gap-6 mb-8">
+            <div className="relative w-32 h-32 bg-gray-100 rounded-2xl overflow-hidden shadow-inner border border-gray-200">
+              <img
+                src={imagePreview}
+                alt="preview"
+                className="object-cover w-full h-full"
+              />
               <input
                 type="file"
                 ref={fileInputRef}
-                accept="image/*"
                 onChange={handleFileChange}
                 className="absolute inset-0 opacity-0 cursor-pointer"
               />
             </div>
-            <button type="button" onClick={() => fileInputRef.current?.click()} className="btn btn-black w-[152px] font-semibold text-nowrap">
-              {imagePreview !== "/assets/images/icons/gallery-grey.svg" ? "Change Photo" : "Add Photo"}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current.click()}
+              className="px-5 py-2.5 rounded-xl bg-indigo-600 text-white font-medium hover:bg-indigo-700 transition-all shadow-sm"
+            >
+              {imagePreview !== "/assets/images/icons/gallery-grey.svg"
+                ? "Change Photo"
+                : "Upload Photo"}
             </button>
           </div>
 
-          {/* Inputs */}
-          <label>Product Name
-            <input type="text" name="name" value={formData.name} onChange={handleChange} className="input-field" />
-          </label>
+          {/* Input fields */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Product Name</label>
+              <input
+                name="name"
+                value={formData.name}
+                onChange={handleChange}
+                placeholder="Enter product name"
+                className="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+              />
+            </div>
 
-          <label>Product Price
-            <input type="number" name="price" value={formData.price} onChange={handleChange} className="input-field" />
-          </label>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Price</label>
+              <input
+                name="price"
+                value={formData.price}
+                onChange={handleChange}
+                placeholder="Enter price"
+                type="number"
+                className="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+              />
+            </div>
+          </div>
 
-          <label>Product Category
-            <select name="category_id" value={formData.category_id} onChange={handleChange} className="input-field">
-              {categories.map(cat => <option key={cat.id} value={cat.id}>{cat.name}</option>)}
+          {/* About */}
+          <div className="mt-5">
+            <label className="text-sm font-medium text-gray-700">Description</label>
+            <textarea
+              name="about"
+              value={formData.about}
+              onChange={handleChange}
+              placeholder="Write a short description..."
+              className="w-full mt-1 px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all min-h-[100px]"
+            />
+          </div>
+
+          {/* Category, Warehouse, Merchant */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mt-5">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Category</label>
+              <select
+                name="category_id"
+                value={formData.category_id}
+                onChange={handleChange}
+                className="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+              >
+                <option value="">Select Category</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-gray-700">Warehouse</label>
+              <select
+                name="warehouse_id"
+                value={formData.warehouse_id}
+                onChange={handleChange}
+                className="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+              >
+                <option value="">Select Warehouse</option>
+                {warehouses.map((w) => (
+                  <option key={w.id} value={w.id}>
+                    {w.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Merchant Assign */}
+          <div className="mt-5">
+            <label className="text-sm font-medium text-gray-700">Assign Merchant</label>
+            <select
+              name="merchant_id"
+              value={formData.merchant_id}
+              onChange={handleChange}
+              className="w-full mt-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+            >
+              <option value="">Select Merchant</option>
+              {merchants.map((m) => (
+                <option key={m.id} value={m.id}>
+                  {m.name}
+                </option>
+              ))}
             </select>
-          </label>
+          </div>
 
-          <label>Product About
-            <textarea name="about" value={formData.about} onChange={handleChange} rows={5} className="input-field" />
-          </label>
-
-          <label>Popularity
-            <select name="is_popular" value={formData.is_popular} onChange={handleChange} className="input-field">
-              <option value="true">Popular</option>
-              <option value="false">Not Popular</option>
-            </select>
-          </label>
-
-          <div className="flex items-center justify-end gap-4">
-            <Link to={"/products"} className="btn btn-red font-semibold">Cancel</Link>
-            <button type="submit" className="btn btn-primary font-semibold">Create Now</button>
+          {/* Submit */}
+          <div className="mt-8 text-right">
+            <button
+              type="submit"
+              className="px-6 py-3 rounded-xl bg-indigo-600 text-white font-semibold hover:bg-indigo-700 transition-all shadow-md"
+            >
+              Create Product
+            </button>
           </div>
         </form>
       </div>

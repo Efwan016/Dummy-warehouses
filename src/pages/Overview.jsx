@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useFetchAllTransactions } from "../hooks/useDummyTransactions";
-import { useFetchProduct } from "../hooks/useDummyProducts";
+import { useFetchAllTransactions } from "../hooks/useLocalTransactions";
+import { useFetchProduct } from "../hooks/useLocalProducts";
 import UserProfileCard from "../components/UserProfileCard";
 
 const Overview = () => {

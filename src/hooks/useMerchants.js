@@ -1,4 +1,4 @@
-// useMerchants.js
+// src/hooks/useMerchants.js
 import { useState, useEffect } from "react";
 import {
   getMerchants,
@@ -11,23 +11,33 @@ import {
 export const useMerchants = () => {
   const [merchants, setMerchants] = useState([]);
 
+  const loadMerchants = () => setMerchants(getMerchants());
+
   useEffect(() => {
-    setMerchants(getMerchants());
+    loadMerchants();
+
+    // 🔔 Listener untuk update otomatis kalau product berubah
+    const handleProductsChange = () => loadMerchants();
+    window.addEventListener("products-changed", handleProductsChange);
+
+    return () => {
+      window.removeEventListener("products-changed", handleProductsChange);
+    };
   }, []);
 
   const addMerchant = (merchant) => {
     addMerchantLS(merchant);
-    setMerchants(getMerchants());
+    loadMerchants();
   };
 
   const updateMerchant = (id, updatedData) => {
     updateMerchantLS(id, updatedData);
-    setMerchants(getMerchants());
+    loadMerchants();
   };
 
   const deleteMerchant = (id) => {
     deleteMerchantLS(id);
-    setMerchants(getMerchants());
+    loadMerchants();
   };
 
   const getMerchant = (id) => getMerchantById(id);

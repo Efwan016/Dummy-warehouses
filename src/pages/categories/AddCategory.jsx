@@ -1,6 +1,7 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import UserProfileCard from "../../components/UserProfileCard";
+import { toBase64 } from "../../utils/toBase64.js";
 
 const AddCategory = () => {
   const [name, setName] = useState("");
@@ -12,8 +13,15 @@ const AddCategory = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const newCategory = { id: Date.now(), name, tagline, photo };
-    console.log("Saved:", newCategory);
+    const newCategory = { id: Date.now(), name, tagline, photo, products: [] };
+
+    // ambil data lama
+    const stored = JSON.parse(localStorage.getItem("categories")) || [];
+
+    // gabungkan dan simpan
+    const updated = [...stored, newCategory];
+    localStorage.setItem("categories", JSON.stringify(updated));
+
     navigate("/categories");
   };
 
@@ -51,9 +59,12 @@ const AddCategory = () => {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                onChange={(e) => {
+                onChange={async (e) => {
                   const file = e.target.files[0];
-                  if (file) setPhoto(URL.createObjectURL(file));
+                  if (file) {
+                    const base64 = await toBase64(file);
+                    setPhoto(base64);
+                  }
                 }}
               />
             </div>

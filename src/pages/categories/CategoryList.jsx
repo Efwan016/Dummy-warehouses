@@ -1,8 +1,25 @@
 import { Link } from "react-router-dom";
 import UserProfileCard from "../../components/UserProfileCard";
-import { categories } from "../../data/categories";  // ✅ import data
+import { useEffect, useState } from "react";
 
 const CategoryList = () => {
+    const [categories, setCategories] = useState([]);
+
+    useEffect(() => {
+        const stored = JSON.parse(localStorage.getItem("categories")) || [];
+        setCategories(stored);
+    }, []);
+
+    const deleteCategory = (id) => {
+        if (!window.confirm("Are you sure you want to delete this category?")) return;
+
+        const stored = JSON.parse(localStorage.getItem("categories")) || [];
+        const updated = stored.filter((cat) => cat.id !== id);
+        localStorage.setItem("categories", JSON.stringify(updated));
+        setCategories(updated);
+    };
+
+
     return (
         <div id="main-container" className="flex flex-1">
             <div id="Content" className="flex flex-col flex-1 p-6 pt-0">
@@ -66,16 +83,25 @@ const CategoryList = () => {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-3">
-                                            <p className="font-semibold text-xl text-center item-center">
-                                                {category.products.length} Products
+                                            <p className="font-semibold text-xl text-center">
+                                                {category.productIds?.length || 0} Products
                                             </p>
                                         </div>
-                                        <Link
-                                            to={`/categories/edit/${category.id}`}
-                                            className="btn btn-black font-semibold"
-                                        >
-                                            Edit
-                                        </Link>
+
+                                        <div className="flex items-center gap-3">
+                                            <Link
+                                                to={`/categories/edit/${category.id}`}
+                                                className="btn btn-black font-semibold"
+                                            >
+                                                Edit
+                                            </Link>
+                                            <button
+                                                onClick={() => deleteCategory(category.id)}
+                                                className="btn btn-red font-semibold"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

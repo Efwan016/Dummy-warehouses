@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import UserProfileCard from "../../components/UserProfileCard";
 import { useAuth } from "../../hooks/useAuth";
-import { initialWarehouses } from "../../data/warehouses";
 import React, { useState, useEffect } from "react";
 
 const WarehouseList = () => {
@@ -10,9 +9,10 @@ const WarehouseList = () => {
     const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
 
     useEffect(() => {
-        // pakai data dari /data/warehouses.js
-        setWarehouses(initialWarehouses);
+        const stored = JSON.parse(localStorage.getItem("warehouses")) || [];
+        setWarehouses(stored);
     }, []);
+
 
     if (!user) return <p>Loading user...</p>;
 
@@ -24,9 +24,12 @@ const WarehouseList = () => {
     // 🗑️ hapus warehouse
     const handleDeleteWarehouse = (id) => {
         if (window.confirm("Are you sure you want to delete this warehouse?")) {
-            setWarehouses((prev) => prev.filter((w) => w.id !== id));
+            const updated = warehouses.filter((w) => w.id !== id);
+            setWarehouses(updated);
+            localStorage.setItem("warehouses", JSON.stringify(updated)); // ✅ sync ke localStorage
         }
     };
+
 
     return (
         <div id="main-container" className="flex flex-1">
@@ -71,7 +74,7 @@ const WarehouseList = () => {
                                     View and update your Warehouses list here.
                                 </p>
                             </div>
-                            
+
                             {user.roles.includes("manager") && (
                                 <Link
                                     to={"/warehouses/add"}
@@ -126,8 +129,8 @@ const WarehouseList = () => {
                                                     className="size-6 flex shrink-0"
                                                     alt="icon"
                                                 />
-                                                <p className="font-semibold text-lg text-nowrap">
-                                                    {warehouse.products.length || 0} Products
+                                                <p className="font-semibold text-xl text-center">
+                                                    {warehouse.productIds?.length || 0} Products
                                                 </p>
                                             </div>
 

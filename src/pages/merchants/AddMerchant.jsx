@@ -31,13 +31,19 @@ const { addMerchant } = useMerchants();
   };
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const preview = URL.createObjectURL(file);
-      setImagePreview(preview);
-      setFormData((prev) => ({ ...prev, photo: preview }));
-    }
-  };
+  const file = e.target.files?.[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result; // hasil encode base64
+      setImagePreview(base64);
+      setFormData((prev) => ({ ...prev, photo: base64 }));
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
+
 
   const handleSubmit = (e) => {
     e.preventDefault();

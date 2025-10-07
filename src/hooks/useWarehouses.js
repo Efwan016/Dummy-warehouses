@@ -1,13 +1,21 @@
-import { useState } from "react";
-import { initialWarehouses } from "../data/warehouses";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-// global mock
-let warehousesDB = [...initialWarehouses];
 
 export const useWarehouses = () => {
   const navigate = useNavigate();
-  const [warehouses, setWarehouses] = useState(warehousesDB);
+  const [warehouses, setWarehouses] = useState([]);
+
+  // ✅ ambil data dari localStorage saat pertama kali load
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("warehouses")) || [];
+    setWarehouses(stored);
+  }, []);
+
+  // ✅ function buat nyimpen ke localStorage
+  const saveToLocal = (data) => {
+    localStorage.setItem("warehouses", JSON.stringify(data));
+    setWarehouses(data);
+  };
 
   const createWarehouse = (data) => {
     const newWarehouse = {
@@ -17,8 +25,7 @@ export const useWarehouses = () => {
       products: [],
     };
     const updated = [...warehouses, newWarehouse];
-    setWarehouses(updated);
-    warehousesDB = updated; // update global mock
+    saveToLocal(updated);
     navigate("/warehouses");
   };
 
@@ -26,15 +33,13 @@ export const useWarehouses = () => {
     const updated = warehouses.map((w) =>
       w.id === Number(id) ? { ...w, ...data } : w
     );
-    setWarehouses(updated);
-    warehousesDB = updated;
+    saveToLocal(updated);
     navigate("/warehouses");
   };
 
   const deleteWarehouse = (id) => {
     const filtered = warehouses.filter((w) => w.id !== Number(id));
-    setWarehouses(filtered);
-    warehousesDB = filtered;
+    saveToLocal(filtered);
   };
 
   const getWarehouse = (id) =>

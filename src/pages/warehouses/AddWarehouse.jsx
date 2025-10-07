@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import React, { useRef, useState } from "react";
 import UserProfileCard from "../../components/UserProfileCard";
 import { Link } from "react-router-dom";
+import { toBase64 } from "../../utils/toBase64.js";
 
 const AddWarehouse = () => {
   const { user } = useAuth();
@@ -73,11 +74,12 @@ const AddWarehouse = () => {
                   type="file"
                   ref={fileInputRef}
                   accept="image/*"
-                  onChange={(e) => {
+                  onChange={async (e) => {
                     const file = e.target.files?.[0];
                     if (file) {
-                      setValue("photo", file);
-                      setImagePreview(URL.createObjectURL(file));
+                      const base64 = await toBase64(file);
+                      setValue("photo", base64);
+                      setImagePreview(base64);
                     }
                   }}
                   className="absolute inset-0 opacity-0 cursor-pointer"
