@@ -6,10 +6,10 @@ import { useMerchants } from "../../hooks/useMerchants";
 
 
 const AddMerchant = () => {
-  
-const { addMerchant } = useMerchants();
 
-  
+  const { addMerchant } = useMerchants();
+
+
   const [imagePreview, setImagePreview] = useState(
     "/assets/images/icons/gallery-grey.svg"
   );
@@ -31,19 +31,17 @@ const { addMerchant } = useMerchants();
   };
 
   const handleFileChange = (e) => {
-  const file = e.target.files?.[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result; // hasil encode base64
-      setImagePreview(base64);
-      setFormData((prev) => ({ ...prev, photo: base64 }));
-    };
-    reader.readAsDataURL(file);
-  }
-};
-
-
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result; // hasil encode base64
+        setImagePreview(base64);
+        setFormData((prev) => ({ ...prev, photo: base64 }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -52,19 +50,29 @@ const { addMerchant } = useMerchants();
       return;
     }
 
+    // ✅ Cegah simpan data besar ke localStorage
+    const safePhoto =
+      formData.photo.startsWith("data:image") || formData.photo.startsWith("blob:")
+        ? "/assets/images/icons/store-black.svg"
+        : formData.photo;
+
     addMerchant({
       id: Date.now(),
       name: formData.name,
-      photo: formData.photo,
-      keeper: { name: formData.keeper },
+      photo: safePhoto,
+      keeper: {
+        id: Date.now(), // 👈 sementara generate id unik
+        name: formData.keeper,
+      },
       phone: formData.phone,
       address: formData.address,
       products: [],
     });
 
-    navigate("/merchants"); // balik ke list
-  };
 
+
+    navigate("/merchants");
+  };
 
   return (
     <div id="main-container" className="flex flex-1">

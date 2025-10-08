@@ -1,7 +1,6 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import UserProfileCard from "../../components/UserProfileCard";
-import { toBase64 } from "../../utils/toBase64.js";
 
 const AddCategory = () => {
   const [name, setName] = useState("");
@@ -55,18 +54,18 @@ const AddCategory = () => {
                 Upload Photo
               </button>
               <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={async (e) => {
-                  const file = e.target.files[0];
-                  if (file) {
-                    const base64 = await toBase64(file);
-                    setPhoto(base64);
-                  }
-                }}
-              />
+  ref={fileInputRef}
+  type="file"
+  accept="image/*"
+  className="hidden"
+  onChange={(e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file); // bukan base64
+      setPhoto(imageUrl);
+    }
+  }}
+/>
             </div>
 
             <input

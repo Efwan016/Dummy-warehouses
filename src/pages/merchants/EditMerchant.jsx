@@ -1,18 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { getMerchantById, updateMerchant } from "../../data/merchants";
+import { getCategoryById, updateCategory } from "../../data/categories";
 import UserProfileCard from "../../components/UserProfileCard";
 
-const EditMerchant = () => {
+const EditCategory = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: "",
-    phone: "",
-    keeper: "",
-    address: "",
+    tagline: "",
     photo: "/assets/images/icons/gallery-grey.svg",
   });
 
@@ -20,18 +18,16 @@ const EditMerchant = () => {
     "/assets/images/icons/gallery-grey.svg"
   );
 
-  // ✅ Ambil data merchant dari localStorage saat mount
+  // ✅ Ambil data category dari localStorage
   useEffect(() => {
-    const merchant = getMerchantById(id);
-    if (merchant) {
+    const category = getCategoryById(id);
+    if (category) {
       setFormData({
-        name: merchant.name || "",
-        phone: merchant.phone || "",
-        keeper: merchant.keeper?.name || "",
-        address: merchant.address || "",
-        photo: merchant.photo || "/assets/images/icons/gallery-grey.svg",
+        name: category.name || "",
+        tagline: category.tagline || "",
+        photo: category.photo || "/assets/images/icons/gallery-grey.svg",
       });
-      setImagePreview(merchant.photo || "/assets/images/icons/gallery-grey.svg");
+      setImagePreview(category.photo || "/assets/images/icons/gallery-grey.svg");
     }
   }, [id]);
 
@@ -51,21 +47,20 @@ const EditMerchant = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!formData.name || !formData.keeper) {
-      alert("Please fill merchant name and keeper!");
+
+    if (!formData.name) {
+      alert("Please fill category name!");
       return;
     }
 
-    updateMerchant(String(id), {
+    updateCategory(String(id), {
       id: String(id),
       name: formData.name,
-      phone: formData.phone,
-      keeper: { name: formData.keeper },
-      address: formData.address,
+      tagline: formData.tagline,
       photo: formData.photo,
     });
 
-    navigate("/merchants");
+    navigate("/categories");
   };
 
   return (
@@ -75,9 +70,9 @@ const EditMerchant = () => {
         <div id="Top-Bar" className="flex items-center w-full gap-6 mt-[30px] mb-6">
           <div className="flex items-center gap-6 h-[92px] bg-white w-full rounded-3xl p-[18px]">
             <div className="flex flex-col gap-[6px] w-full">
-              <h1 className="font-bold text-2xl">Edit Merchant</h1>
+              <h1 className="font-bold text-2xl">Edit Category</h1>
               <Link
-                to={"/merchants"}
+                to={"/categories"}
                 className="flex items-center gap-[6px] text-monday-gray font-semibold"
               >
                 <img
@@ -85,7 +80,7 @@ const EditMerchant = () => {
                   className="size-4 flex shrink-0"
                   alt="icon"
                 />
-                Manage Merchants
+                Manage Categories
               </Link>
             </div>
           </div>
@@ -99,7 +94,7 @@ const EditMerchant = () => {
             className="flex flex-col w-full rounded-3xl p-[18px] gap-5 bg-white"
           >
             <h2 className="font-semibold text-xl capitalize">
-              Update merchant details
+              Update category details
             </h2>
 
             {/* Photo */}
@@ -128,47 +123,27 @@ const EditMerchant = () => {
               </button>
             </div>
 
-            {/* Name */}
+            {/* Inputs */}
             <input
               type="text"
               name="name"
-              placeholder="Merchant Name"
+              placeholder="Category Name"
               value={formData.name}
               onChange={handleChange}
               className="border rounded-3xl px-4 h-[50px]"
             />
 
-            {/* Phone */}
-            <input
-              type="tel"
-              name="phone"
-              placeholder="Phone Number"
-              value={formData.phone}
-              onChange={handleChange}
-              className="border rounded-3xl px-4 h-[50px]"
-            />
-
-            {/* Keeper */}
             <input
               type="text"
-              name="keeper"
-              placeholder="Keeper Name"
-              value={formData.keeper}
+              name="tagline"
+              placeholder="Tagline"
+              value={formData.tagline}
               onChange={handleChange}
               className="border rounded-3xl px-4 h-[50px]"
-            />
-
-            {/* Address */}
-            <textarea
-              name="address"
-              placeholder="Merchant Address"
-              value={formData.address}
-              onChange={handleChange}
-              className="border rounded-3xl px-4 py-2"
             />
 
             <div className="flex justify-end gap-4">
-              <Link to={"/merchants"} className="btn btn-red">
+              <Link to={"/categories"} className="btn btn-red">
                 Cancel
               </Link>
               <button type="submit" className="btn btn-primary">
@@ -182,4 +157,4 @@ const EditMerchant = () => {
   );
 };
 
-export default EditMerchant;
+export default EditCategory;

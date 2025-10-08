@@ -4,7 +4,6 @@ import { useProducts } from "../../hooks/useProducts";
 import { useLocalData } from "../../hooks/useLocalData";
 import UserProfileCard from "../../components/UserProfileCard";
 import { useNavigate } from "react-router-dom";
-import { toBase64 } from "../../utils/toBase64.js";
 
 const AddProduct = () => {
   const fileInputRef = useRef(null);
@@ -32,20 +31,39 @@ const AddProduct = () => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleFileChange = async (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const base64 = await toBase64(file);
-      setFormData({ ...formData, thumbnail: base64 });
-      setImagePreview(base64);
-    }
-  };
+  const handleFileChange = (e) => {
+  const file = e.target.files?.[0];
+  if (file) {
+    // Simulasi preview tanpa simpan ke localStorage
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreview(previewUrl);
+
+    // Simpan hanya path default (bukan base64)
+    setFormData({ ...formData, thumbnail: "/assets/images/icons/gallery-grey.svg" });
+  }
+};
+
+
 
   const handleSubmit = (e) => {
-    e.preventDefault();
-    createProduct({ ...formData, id: Date.now(), photo: formData.thumbnail }); 
-    navigate("/products");
-  };
+  e.preventDefault();
+
+  // kalau thumbnail blob atau base64, ganti icon default
+  const safePhoto =
+    formData.thumbnail?.startsWith("data:image") ||
+    formData.thumbnail?.startsWith("blob:")
+      ? "/assets/images/icons/gallery-grey.svg"
+      : formData.thumbnail;
+
+  createProduct({
+    ...formData,
+    id: Date.now(),
+    photo: safePhoto,
+  });
+
+  navigate("/products");
+};
+
 
 
   return (

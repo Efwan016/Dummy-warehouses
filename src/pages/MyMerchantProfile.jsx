@@ -12,18 +12,16 @@ const MyMerchantProfile = () => {
     const currentUser = JSON.parse(localStorage.getItem("user"));
     const merchants = JSON.parse(localStorage.getItem("merchants")) || [];
 
-    console.log("Current User:", currentUser);
-    console.log("All Merchants:", merchants);
-
     if (
       currentUser &&
       (currentUser.role === "keeper" || currentUser.roles?.includes("keeper"))
     ) {
+      // Cari merchant yang ditugaskan ke keeper
       let assignedMerchant = merchants.find(
         (m) => String(m.keeper?.id) === String(currentUser.id)
       );
 
-      // fallback cari dari merchant_id
+      // fallback: jika currentUser punya merchant_id langsung
       if (!assignedMerchant && currentUser.merchant_id) {
         assignedMerchant = merchants.find(
           (m) => String(m.id) === String(currentUser.merchant_id)
@@ -32,11 +30,104 @@ const MyMerchantProfile = () => {
 
       if (assignedMerchant) {
         setMerchant(assignedMerchant);
-        localStorage.setItem("merchant", JSON.stringify(assignedMerchant));
+
+        // 💡 Simpan hanya ID merchant, bukan seluruh object
+        localStorage.setItem("merchant_id", assignedMerchant.id);
+        localStorage.removeItem("merchant"); // hapus data lama yang berat
       }
     } else {
-      const storedMerchant = JSON.parse(localStorage.getItem("merchant"));
-      setMerchant(storedMerchant);
+      // Ambil merchant berdasarkan ID yang disimpan
+      const merchantId = localStorage.getItem("merchant_id");
+      if (merchantId) {
+        const storedMerchants = JSON.parse(localStorage.getItem("merchants")) || [];
+        const foundMerchant = storedMerchants.find(
+          (m) => String(m.id) === String(merchantId)
+        );
+        if (foundMerchant) {
+          setMerchant(foundMerchant);
+        }
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    const currentUser = JSON.parse(localStorage.getItem("user"));
+    const merchants = JSON.parse(localStorage.getItem("merchants")) || [];
+    const allProducts = JSON.parse(localStorage.getItem("products")) || [];
+    const categories = JSON.parse(localStorage.getItem("categories")) || [];
+    const warehouses = JSON.parse(localStorage.getItem("warehouses")) || [];
+
+    let assignedMerchant = null;
+
+    // 🔍 Cari merchant yang dipegang oleh keeper
+    if (
+      currentUser &&
+      (currentUser.role === "keeper" || currentUser.roles?.includes("keeper"))
+    ) {
+      assignedMerchant = merchants.find(
+        (m) => String(m.keeper?.id) === String(currentUser.id)
+      );
+
+      // fallback kalau keeper_id gak ada, tapi ada merchant_id di user
+      if (!assignedMerchant && currentUser.merchant_id) {
+        assignedMerchant = merchants.find(
+          (m) => String(m.id) === String(currentUser.merchant_id)
+        );
+      }
+
+      if (assignedMerchant) {
+        localStorage.setItem("merchant_id", assignedMerchant.id);
+        localStorage.removeItem("merchant");
+      }
+    } else {
+      const merchantId = localStorage.getItem("merchant_id");
+      assignedMerchant = merchants.find((m) => String(m.id) === String(merchantId));
+    }
+
+    // ✅ Sinkron data produk + kategori + stok + foto
+    if (assignedMerchant) {
+      const merchantProducts = allProducts
+        .filter((p) => String(p.merchant_id) === String(assignedMerchant.id))
+        .map((p) => {
+          // ✅ Pastikan category dan warehouse ketemu dengan loose comparison
+          const category =
+            categories.find((c) => String(c.id) === String(p.category_id)) ||
+            { name: "No Category", photo: "/assets/images/icons/document-text-grey.svg" };
+
+          const warehouse =
+            warehouses.find((w) => String(w.id) === String(p.warehouse_id)) ||
+            { name: "No Warehouse" };
+
+          // ✅ Fix thumbnail: pastikan ada URL valid
+          let safeThumbnail = "/assets/images/icons/gallery-grey.svg";
+          if (p.thumbnail) {
+            if (p.thumbnail.startsWith("data:image") || p.thumbnail.startsWith("http")) {
+              safeThumbnail = p.thumbnail;
+            } else {
+              safeThumbnail = `/uploads/${p.thumbnail}`; // fallback jika hanya filename
+            }
+          }
+
+          // ✅ Pastikan stock muncul
+          const stock =
+            p.stock ??
+            p.pivot?.stock ??
+            0; // ambil dari salah satu yang tersedia
+
+          return {
+            ...p,
+            thumbnail: safeThumbnail,
+            category,
+            warehouse,
+            pivot: { stock },
+          };
+        });
+
+      // ✅ Update state merchant beserta produk lengkap
+      setMerchant({
+        ...assignedMerchant,
+        products: merchantProducts,
+      });
     }
   }, []);
 
@@ -111,6 +202,8 @@ const MyMerchantProfile = () => {
             </div>
             <UserProfileCard />
           </div>
+
+          {/* Merchant Info */}
           <main className="flex flex-col gap-6 flex-1">
             <section
               id="Warehouse-Info"
@@ -144,11 +237,12 @@ const MyMerchantProfile = () => {
                   <span>Keeper Name:</span>
                 </p>
                 <p className="font-semibold text-lg">
-                  {merchant.keeper.name} (You)
+                  {merchant.keeper?.name || "No Keeper Assigned"}
                 </p>
               </div>
             </section>
 
+            {/* Product List */}
             <section
               id="Products"
               className="flex flex-col gap-6 flex-1 rounded-3xl p-[18px] px-0 bg-white"
@@ -220,8 +314,9 @@ const MyMerchantProfile = () => {
                               alt="icon"
                             />
                             <p className="font-semibold text-lg text-nowrap w-[124px] truncate">
-                              {product.category.name}
+                              {product.category?.name || "No Category"}
                             </p>
+
                           </div>
                           <div className="flex items-center gap-4">
                             <button
@@ -239,7 +334,7 @@ const MyMerchantProfile = () => {
                 ) : (
                   <div
                     id="Empty-State"
-                    className="hidden flex-col flex-1 items-center justify-center rounded-[20px] border-dashed border-2 border-monday-gray gap-6"
+                    className="flex flex-col flex-1 items-center justify-center rounded-[20px] border-dashed border-2 border-monday-gray gap-6"
                   >
                     <img
                       src="assets/images/icons/document-text-grey.svg"
@@ -282,16 +377,19 @@ const MyMerchantProfile = () => {
               <div className="flex items-center justify-between">
                 <div className="flex flex-col gap-2">
                   <p className="flex items-center gap-[6px] font-semibold text-lg">
-                    <img
-                      src={selectedProduct.category.photo}
-                      className="size-6 flex shrink-0"
-                      alt="icon"
-                    />
+                    {selectedProduct.category?.photo && (
+                      <img
+                        src={selectedProduct.category.photo}
+                        className="size-6 flex shrink-0"
+                        alt="icon"
+                      />
+                    )}
                     {selectedProduct.name}
                   </p>
                   <p className="font-bold text-lg">
-                    {selectedProduct.category.name}
+                    {selectedProduct.category?.name || "No Category"}
                   </p>
+                  <p className="font-bold text-lg">{selectedProduct.category.name}</p>
                   <p className="font-semibold text-[17px] text-monday-blue">
                     Rp {selectedProduct.price.toLocaleString("id")}
                   </p>
@@ -306,12 +404,8 @@ const MyMerchantProfile = () => {
               </div>
               <hr className="border-monday-border" />
               <div>
-                <p className="font-medium text-sm text-monday-gray">
-                  Product About
-                </p>
-                <p className="font-semibold leading-[160%]">
-                  {selectedProduct.about}
-                </p>
+                <p className="font-medium text-sm text-monday-gray">Product About</p>
+                <p className="font-semibold leading-[160%]">{selectedProduct.about}</p>
               </div>
             </div>
           </div>
