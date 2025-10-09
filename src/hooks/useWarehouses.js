@@ -21,13 +21,14 @@ export const useWarehouses = () => {
     const newWarehouse = {
       id: Date.now(),
       ...data,
-      photo: data.photo || "/assets/images/icons/warehouse-1.svg",
+      photo: data.photo,
       products: [],
     };
     const updated = [...warehouses, newWarehouse];
     saveToLocal(updated);
     navigate("/warehouses");
   };
+
 
   const updateWarehouse = (id, data) => {
     const updated = warehouses.map((w) =>
@@ -38,8 +39,12 @@ export const useWarehouses = () => {
   };
 
   const deleteWarehouse = (id) => {
-    const filtered = warehouses.filter((w) => w.id !== Number(id));
-    saveToLocal(filtered);
+    if (window.confirm("Are you sure you want to delete this warehouse?")) {
+      const updated = warehouses.filter((w) => w.id !== id);
+      setWarehouses(updated);
+      localStorage.setItem("warehouses", JSON.stringify(updated)); // ✅ sync ke localStorage
+    }
+    navigate("/warehouses");
   };
 
   const getWarehouse = (id) =>

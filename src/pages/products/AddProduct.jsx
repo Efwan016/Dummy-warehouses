@@ -22,6 +22,7 @@ const AddProduct = () => {
     warehouse_id: "",
     merchant_id: "",
     stock: "",
+    photo: "",
   });
 
   const [imagePreview, setImagePreview] = useState("/assets/images/icons/gallery-grey.svg");
@@ -32,14 +33,19 @@ const AddProduct = () => {
   };
 
   const handleFileChange = (e) => {
-  const file = e.target.files?.[0];
+  const file = e.target.files[0];
   if (file) {
-    // Simulasi preview tanpa simpan ke localStorage
-    const previewUrl = URL.createObjectURL(file);
-    setImagePreview(previewUrl);
-
-    // Simpan hanya path default (bukan base64)
-    setFormData({ ...formData, thumbnail: "/assets/images/icons/gallery-grey.svg" });
+    const reader = new FileReader();
+    reader.onloadend = () => {
+       const previewUrl = URL.createObjectURL(file);
+      setImagePreview(previewUrl);
+      // Convert file ke Base64 URL agar bisa disimpan di localStorage
+      setFormData({
+        ...formData,
+        photo: reader.result,  // ← hasil base64 string
+      });
+    };
+    reader.readAsDataURL(file);
   }
 };
 
@@ -47,22 +53,13 @@ const AddProduct = () => {
 
   const handleSubmit = (e) => {
   e.preventDefault();
+  createProduct(formData);  // kirim semua data, termasuk photo base64
 
-  // kalau thumbnail blob atau base64, ganti icon default
-  const safePhoto =
-    formData.thumbnail?.startsWith("data:image") ||
-    formData.thumbnail?.startsWith("blob:")
-      ? "/assets/images/icons/gallery-grey.svg"
-      : formData.thumbnail;
 
-  createProduct({
-    ...formData,
-    id: Date.now(),
-    photo: safePhoto,
-  });
+    navigate("/products");
+  };
 
-  navigate("/products");
-};
+
 
 
 

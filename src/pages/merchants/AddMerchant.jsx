@@ -49,12 +49,8 @@ const AddMerchant = () => {
       alert("Please fill merchant name and keeper!");
       return;
     }
+    const safePhoto = formData.photo || "/assets/images/icons/store-black.svg";
 
-    // ✅ Cegah simpan data besar ke localStorage
-    const safePhoto =
-      formData.photo.startsWith("data:image") || formData.photo.startsWith("blob:")
-        ? "/assets/images/icons/store-black.svg"
-        : formData.photo;
 
     addMerchant({
       id: Date.now(),

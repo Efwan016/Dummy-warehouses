@@ -1,33 +1,35 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
-import { getCategoryById, updateCategory } from "../../data/categories";
+import { getMerchantById, updateMerchant } from "../../data/merchants";
 import UserProfileCard from "../../components/UserProfileCard";
 
-const EditCategory = () => {
+const EditMerchant = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: "",
-    tagline: "",
-    photo: "/assets/images/icons/gallery-grey.svg",
+    phone: "",
+    keeper: "",
+    address: "",
+    photo: "/assets/images/icons/store-black.svg",
   });
 
-  const [imagePreview, setImagePreview] = useState(
-    "/assets/images/icons/gallery-grey.svg"
-  );
+  const [imagePreview, setImagePreview] = useState("/assets/images/icons/store-black.svg");
 
-  // ✅ Ambil data category dari localStorage
+  // ✅ Ambil data merchant dari localStorage
   useEffect(() => {
-    const category = getCategoryById(id);
-    if (category) {
+    const merchant = getMerchantById(Number(id));
+    if (merchant) {
       setFormData({
-        name: category.name || "",
-        tagline: category.tagline || "",
-        photo: category.photo || "/assets/images/icons/gallery-grey.svg",
+        name: merchant.name || "",
+        phone: merchant.phone || "",
+        keeper: merchant.keeper?.name || "",
+        address: merchant.address || "",
+        photo: merchant.photo || "/assets/images/icons/store-black.svg",
       });
-      setImagePreview(category.photo || "/assets/images/icons/gallery-grey.svg");
+      setImagePreview(merchant.photo || "/assets/images/icons/store-black.svg");
     }
   }, [id]);
 
@@ -39,9 +41,13 @@ const EditCategory = () => {
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
-      const preview = URL.createObjectURL(file);
-      setImagePreview(preview);
-      setFormData((prev) => ({ ...prev, photo: preview }));
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result;
+        setImagePreview(base64);
+        setFormData((prev) => ({ ...prev, photo: base64 }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
@@ -49,18 +55,20 @@ const EditCategory = () => {
     e.preventDefault();
 
     if (!formData.name) {
-      alert("Please fill category name!");
+      alert("Please fill merchant name!");
       return;
     }
 
-    updateCategory(String(id), {
-      id: String(id),
+    updateMerchant(Number(id), {
+      id: Number(id),
       name: formData.name,
-      tagline: formData.tagline,
-      photo: formData.photo,
+      phone: formData.phone,
+      address: formData.address,
+      keeper: { name: formData.keeper },
+      photo: formData.photo || "/assets/images/icons/store-black.svg",
     });
 
-    navigate("/categories");
+    navigate("/merchants");
   };
 
   return (
@@ -70,9 +78,9 @@ const EditCategory = () => {
         <div id="Top-Bar" className="flex items-center w-full gap-6 mt-[30px] mb-6">
           <div className="flex items-center gap-6 h-[92px] bg-white w-full rounded-3xl p-[18px]">
             <div className="flex flex-col gap-[6px] w-full">
-              <h1 className="font-bold text-2xl">Edit Category</h1>
+              <h1 className="font-bold text-2xl">Edit Merchant</h1>
               <Link
-                to={"/categories"}
+                to={"/merchants"}
                 className="flex items-center gap-[6px] text-monday-gray font-semibold"
               >
                 <img
@@ -80,7 +88,7 @@ const EditCategory = () => {
                   className="size-4 flex shrink-0"
                   alt="icon"
                 />
-                Manage Categories
+                Manage Merchants
               </Link>
             </div>
           </div>
@@ -93,18 +101,12 @@ const EditCategory = () => {
             onSubmit={handleSubmit}
             className="flex flex-col w-full rounded-3xl p-[18px] gap-5 bg-white"
           >
-            <h2 className="font-semibold text-xl capitalize">
-              Update category details
-            </h2>
+            <h2 className="font-semibold text-xl capitalize">Update merchant details</h2>
 
             {/* Photo */}
             <div className="flex items-center gap-4">
               <div className="relative size-[100px] rounded-2xl overflow-hidden">
-                <img
-                  src={imagePreview}
-                  alt="preview"
-                  className="size-full object-cover"
-                />
+                <img src={imagePreview} alt="preview" className="size-full object-cover" />
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -117,9 +119,7 @@ const EditCategory = () => {
                 onClick={() => fileInputRef.current.click()}
                 className="btn btn-black"
               >
-                {imagePreview.includes("gallery-grey.svg")
-                  ? "Add Photo"
-                  : "Change Photo"}
+                {imagePreview.includes("store-black.svg") ? "Add Photo" : "Change Photo"}
               </button>
             </div>
 
@@ -127,23 +127,40 @@ const EditCategory = () => {
             <input
               type="text"
               name="name"
-              placeholder="Category Name"
+              placeholder="Merchant Name"
               value={formData.name}
               onChange={handleChange}
               className="border rounded-3xl px-4 h-[50px]"
             />
 
             <input
-              type="text"
-              name="tagline"
-              placeholder="Tagline"
-              value={formData.tagline}
+              type="tel"
+              name="phone"
+              placeholder="Phone Number"
+              value={formData.phone}
               onChange={handleChange}
               className="border rounded-3xl px-4 h-[50px]"
             />
 
+            <input
+              type="text"
+              name="keeper"
+              placeholder="Keeper Name"
+              value={formData.keeper}
+              onChange={handleChange}
+              className="border rounded-3xl px-4 h-[50px]"
+            />
+
+            <textarea
+              name="address"
+              placeholder="Merchant Address"
+              value={formData.address}
+              onChange={handleChange}
+              className="border rounded-3xl px-4 py-2"
+            />
+
             <div className="flex justify-end gap-4">
-              <Link to={"/categories"} className="btn btn-red">
+              <Link to={"/merchants"} className="btn btn-red">
                 Cancel
               </Link>
               <button type="submit" className="btn btn-primary">
@@ -157,4 +174,4 @@ const EditCategory = () => {
   );
 };
 
-export default EditCategory;
+export default EditMerchant;

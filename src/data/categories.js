@@ -1,25 +1,36 @@
-const CATEGORIES_KEY = "categories";
+// src/data/categories.js
+const STORAGE_KEY = "categories";
 
-export const getCategoryById = (id) => {
-  const data = JSON.parse(localStorage.getItem(CATEGORIES_KEY)) || [];
-  return data.find((c) => c.id === id);
+// ✅ Ambil semua categories dari localStorage
+export const getCategories = () => {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 };
 
-export const updateCategory = (id, updatedCategory) => {
-  const data = JSON.parse(localStorage.getItem(CATEGORIES_KEY)) || [];
+// ✅ Ambil satu category by id
+export const getCategoryById = (id) => {
+  const categories = getCategories();
+  return categories.find((c) => String(c.id) === String(id));
+};
 
-  // cegah simpan blob besar
-  if (updatedCategory.photo?.startsWith("blob:")) {
-    updatedCategory.photo = "/assets/images/icons/gallery-grey.svg";
-  }
+// ✅ Tambah category baru
+export const addCategory = (category) => {
+  const categories = getCategories();
+  const updated = [...categories, category];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+};
 
-  const newData = data.map((c) => (c.id === id ? updatedCategory : c));
+// ✅ Update category
+export const updateCategory = (id, updatedData) => {
+  const categories = getCategories().map((c) =>
+    String(c.id) === String(id) ? { ...c, ...updatedData } : c
+  );
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(categories));
+};
 
-  try {
-    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(newData));
-  } catch (err) {
-    console.warn("⚠️ LocalStorage full, clearing...");
-    localStorage.clear(); // opsional
-    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(newData));
-  }
+// ✅ Hapus category
+export const deleteCategory = (id) => {
+  const categories = getCategories().filter(
+    (c) => String(c.id) !== String(id)
+  );
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(categories));
 };

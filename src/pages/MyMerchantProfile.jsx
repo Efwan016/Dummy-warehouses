@@ -99,14 +99,8 @@ const MyMerchantProfile = () => {
             { name: "No Warehouse" };
 
           // ✅ Fix thumbnail: pastikan ada URL valid
-          let safeThumbnail = "/assets/images/icons/gallery-grey.svg";
-          if (p.thumbnail) {
-            if (p.thumbnail.startsWith("data:image") || p.thumbnail.startsWith("http")) {
-              safeThumbnail = p.thumbnail;
-            } else {
-              safeThumbnail = `/uploads/${p.thumbnail}`; // fallback jika hanya filename
-            }
-          }
+          const safeThumbnail = p.photo;
+          
 
           // ✅ Pastikan stock muncul
           const stock =

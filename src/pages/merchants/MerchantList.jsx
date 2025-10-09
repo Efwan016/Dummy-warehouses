@@ -8,6 +8,8 @@ const MerchantList = () => {
     const [selectedMerchantId, setSelectedMerchantId] = useState(null);
     const selectedMerchant = selectedMerchantId ? getMerchant(selectedMerchantId) : null;
 
+    
+
     return (
         <div id="main-container" className="flex flex-1">
             <div id="Content" className="flex flex-col flex-1 p-6 pt-0">
