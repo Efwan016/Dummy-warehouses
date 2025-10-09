@@ -33,27 +33,27 @@ const AddProduct = () => {
   };
 
   const handleFileChange = (e) => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-       const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
-      // Convert file ke Base64 URL agar bisa disimpan di localStorage
-      setFormData({
-        ...formData,
-        photo: reader.result,  // ← hasil base64 string
-      });
-    };
-    reader.readAsDataURL(file);
-  }
-};
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const previewUrl = URL.createObjectURL(file);
+        setImagePreview(previewUrl);
+        // Convert file ke Base64 URL agar bisa disimpan di localStorage
+        setFormData({
+          ...formData,
+          photo: reader.result,  // ← hasil base64 string
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
 
 
   const handleSubmit = (e) => {
-  e.preventDefault();
-  createProduct(formData);  // kirim semua data, termasuk photo base64
+    e.preventDefault();
+    createProduct(formData);  // kirim semua data, termasuk photo base64
 
 
     navigate("/products");
@@ -136,6 +136,22 @@ const AddProduct = () => {
               />
             </div>
           </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="stock" className="font-semibold">
+              Stock
+            </label>
+            <input
+              type="number"
+              id="stock"
+              name="stock"
+              value={formData.stock}
+              onChange={handleChange}
+              className="input input-bordered"
+              placeholder="Enter product stock"
+            />
+          </div>
+
 
           {/* About */}
           <div className="mt-5">

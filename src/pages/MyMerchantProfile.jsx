@@ -4,52 +4,9 @@ import UserProfileCard from "../components/UserProfileCard";
 
 const MyMerchantProfile = () => {
   const [merchant, setMerchant] = useState(null);
-  const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
-  // Ambil merchant dari localStorage
-  useEffect(() => {
-    const currentUser = JSON.parse(localStorage.getItem("user"));
-    const merchants = JSON.parse(localStorage.getItem("merchants")) || [];
-
-    if (
-      currentUser &&
-      (currentUser.role === "keeper" || currentUser.roles?.includes("keeper"))
-    ) {
-      // Cari merchant yang ditugaskan ke keeper
-      let assignedMerchant = merchants.find(
-        (m) => String(m.keeper?.id) === String(currentUser.id)
-      );
-
-      // fallback: jika currentUser punya merchant_id langsung
-      if (!assignedMerchant && currentUser.merchant_id) {
-        assignedMerchant = merchants.find(
-          (m) => String(m.id) === String(currentUser.merchant_id)
-        );
-      }
-
-      if (assignedMerchant) {
-        setMerchant(assignedMerchant);
-
-        // 💡 Simpan hanya ID merchant, bukan seluruh object
-        localStorage.setItem("merchant_id", assignedMerchant.id);
-        localStorage.removeItem("merchant"); // hapus data lama yang berat
-      }
-    } else {
-      // Ambil merchant berdasarkan ID yang disimpan
-      const merchantId = localStorage.getItem("merchant_id");
-      if (merchantId) {
-        const storedMerchants = JSON.parse(localStorage.getItem("merchants")) || [];
-        const foundMerchant = storedMerchants.find(
-          (m) => String(m.id) === String(merchantId)
-        );
-        if (foundMerchant) {
-          setMerchant(foundMerchant);
-        }
-      }
-    }
-  }, []);
-
+  // ✅ Fetch merchant, products, categories, and warehouses from localStorage
   useEffect(() => {
     const currentUser = JSON.parse(localStorage.getItem("user"));
     const merchants = JSON.parse(localStorage.getItem("merchants")) || [];
@@ -59,84 +16,137 @@ const MyMerchantProfile = () => {
 
     let assignedMerchant = null;
 
-    // 🔍 Cari merchant yang dipegang oleh keeper
-    if (
-      currentUser &&
-      (currentUser.role === "keeper" || currentUser.roles?.includes("keeper"))
-    ) {
-      assignedMerchant = merchants.find(
-        (m) => String(m.keeper?.id) === String(currentUser.id)
-      );
-
-      // fallback kalau keeper_id gak ada, tapi ada merchant_id di user
-      if (!assignedMerchant && currentUser.merchant_id) {
-        assignedMerchant = merchants.find(
-          (m) => String(m.id) === String(currentUser.merchant_id)
-        );
-      }
-
-      if (assignedMerchant) {
-        localStorage.setItem("merchant_id", assignedMerchant.id);
-        localStorage.removeItem("merchant");
-      }
+    if (currentUser?.role === "keeper" || currentUser?.roles?.includes("keeper")) {
+      assignedMerchant =
+        merchants.find((m) => String(m.keeper?.id) === String(currentUser.id)) ||
+        merchants.find((m) => String(m.id) === String(currentUser.merchant_id));
     } else {
       const merchantId = localStorage.getItem("merchant_id");
       assignedMerchant = merchants.find((m) => String(m.id) === String(merchantId));
     }
 
-    // ✅ Sinkron data produk + kategori + stok + foto
-    if (assignedMerchant) {
-      const merchantProducts = allProducts
-        .filter((p) => String(p.merchant_id) === String(assignedMerchant.id))
-        .map((p) => {
-          // ✅ Pastikan category dan warehouse ketemu dengan loose comparison
-          const category =
-            categories.find((c) => String(c.id) === String(p.category_id)) ||
-            { name: "No Category", photo: "/assets/images/icons/document-text-grey.svg" };
+    if (!assignedMerchant) return;
 
-          const warehouse =
-            warehouses.find((w) => String(w.id) === String(p.warehouse_id)) ||
-            { name: "No Warehouse" };
+    localStorage.setItem("merchant_id", assignedMerchant.id);
 
-          // ✅ Fix thumbnail: pastikan ada URL valid
-          const safeThumbnail = p.photo;
-          
+    const merchantProducts = allProducts
+      .filter((p) => String(p.merchant_id) === String(assignedMerchant.id))
+      .map((p) => ({
+        ...p,
+        category:
+          categories.find((c) => String(c.id) === String(p.category_id)) || {
+            name: "No Category",
+            photo: "/assets/images/icons/document-text-grey.svg",
+          },
+        warehouse:
+          warehouses.find((w) => String(w.id) === String(p.warehouse_id)) || {
+            name: "No Warehouse",
+          },
+        pivot: { stock: p.stock ?? p.pivot?.stock ?? 0 },
+        thumbnail: p.photo ?? "/assets/images/icons/box-black.svg",
+      }));
 
-          // ✅ Pastikan stock muncul
-          const stock =
-            p.stock ??
-            p.pivot?.stock ??
-            0; // ambil dari salah satu yang tersedia
-
-          return {
-            ...p,
-            thumbnail: safeThumbnail,
-            category,
-            warehouse,
-            pivot: { stock },
-          };
-        });
-
-      // ✅ Update state merchant beserta produk lengkap
-      setMerchant({
-        ...assignedMerchant,
-        products: merchantProducts,
-      });
-    }
+    setMerchant({ ...assignedMerchant, products: merchantProducts });
   }, []);
 
+  const handleShowDetails = (product) => setSelectedProduct(product);
+  const closeModal = () => setSelectedProduct(null);
 
-  // Ambil produk yang dipilih
-  useEffect(() => {
-    if (merchant && selectedProductId) {
-      const product = merchant.products.find((p) => p.id === selectedProductId);
-      setSelectedProduct(product);
-    } else {
-      setSelectedProduct(null);
-    }
-  }, [merchant, selectedProductId]);
+  // ===============================
+  // COMPONENT CATEGORY ACCORDION
+  // ===============================
+  const CategoryAccordion = ({ products, onShowDetails }) => {
+    const [openCategory, setOpenCategory] = useState(null);
 
-  if (!merchant) {
+    const grouped = products.reduce((acc, p) => {
+      const cat = p.category?.name || "Uncategorized";
+      if (!acc[cat]) acc[cat] = [];
+      acc[cat].push(p);
+      return acc;
+    }, {});
+
+    return (
+      <div className="flex flex-col gap-3">
+        {Object.entries(grouped).map(([categoryName, items]) => (
+          <div key={categoryName} className="border rounded-2xl overflow-hidden">
+            {/* Header */}
+            <button
+              onClick={() =>
+                setOpenCategory(openCategory === categoryName ? null : categoryName)
+              }
+              className="w-full flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition p-4"
+            >
+              <div className="flex items-center gap-2">
+                <img
+                  src={items[0]?.category?.photo}
+                  className="w-6 h-6"
+                  alt="icon"
+                />
+                <p className="font-semibold text-lg">{categoryName}</p>
+              </div>
+              <img
+                src={
+                  openCategory === categoryName
+                    ? "assets/images/icons/arrow-up-black.svg"
+                    : "assets/images/icons/arrow-down-black.svg"
+                }
+                className="w-5 h-5"
+                alt="toggle"
+              />
+            </button>
+
+            {/* Produk */}
+            <div
+              className={`transition-all duration-300 overflow-hidden ${
+                openCategory === categoryName ? "max-h-[999px] p-4" : "max-h-0 p-0"
+              }`}
+            >
+              <div className="flex flex-col gap-3">
+                {items.map((product) => (
+                  <div
+                    key={product.id}
+                    className="flex flex-col md:flex-row md:items-center justify-between bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition"
+                  >
+                    <div className="flex items-center gap-3 w-full md:w-[340px]">
+                      <div className="flex w-16 h-16 rounded-xl bg-gray-100 items-center justify-center overflow-hidden">
+                        <img
+                          src={product.thumbnail}
+                          className="w-full h-full object-contain"
+                          alt={product.name}
+                        />
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <p className="font-semibold text-lg">{product.name}</p>
+                        <p className="text-sm text-gray-500">
+                          Stock: <span className="font-medium">{product.pivot?.stock ?? 0}</span>
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-4 justify-between mt-3 md:mt-0 w-full md:w-auto">
+                      <p className="font-semibold text-monday-blue text-lg">
+                        Rp {product.price.toLocaleString("id")}
+                      </p>
+                      <button
+                        onClick={() => onShowDetails(product)}
+                        className="btn btn-primary-opacity min-w-[100px] font-semibold"
+                      >
+                        Details
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  };
+
+  // ===============================
+  // RENDER
+  // ===============================
+  if (!merchant)
     return (
       <div className="flex bg-gray-100 min-h-screen">
         <Sidebar />
@@ -146,89 +156,39 @@ const MyMerchantProfile = () => {
         </main>
       </div>
     );
-  }
 
   return (
     <>
-      <div id="main-container" className="flex flex-1">
+      <div id="main-container" className="flex flex-1 min-h-screen bg-gray-50">
         <Sidebar />
-        <div id="Content" className="flex flex-col flex-1 p-6 pt-0">
-          <div
-            id="Top-Bar"
-            className="flex items-center w-full gap-6 mt-[30px] mb-6"
-          >
-            <div className="flex items-center gap-6 h-[92px] bg-white w-full rounded-3xl p-[18px]">
-              <div className="flex flex-col gap-[6px] w-full">
+        <div id="Content" className="flex flex-col flex-1 p-4 sm:p-6 md:p-8">
+          {/* Header */}
+          <div className="flex flex-col md:flex-row items-center justify-between w-full gap-4 mt-6 mb-6">
+            <div className="flex items-center gap-4 bg-white w-full rounded-3xl p-4 shadow-sm">
+              <div className="flex flex-col gap-1 w-full">
                 <h1 className="font-bold text-2xl">Manage Merchants</h1>
               </div>
-              <div className="flex items-center flex-nowrap gap-3">
-                <a href="/merchant-overview">
-                  <div className="flex size-14 rounded-full bg-monday-gray-background items-center justify-center overflow-hidden">
-                    <img
-                      src="assets/images/icons/search-normal-black.svg"
-                      className="size-6"
-                      alt="icon"
-                    />
-                  </div>
-                </a>
-                <a href="/merchant">
-                  <div className="flex size-14 rounded-full bg-monday-gray-background items-center justify-center overflow-hidden">
-                    <img
-                      src="assets/images/icons/notification-black.svg"
-                      className="size-6"
-                      alt="icon"
-                    />
-                  </div>
-                </a>
-                <div className="relative w-fit">
-                  <div className="flex size-14 rounded-full bg-monday-lime-green items-center justify-center overflow-hidden">
-                    <img
-                      src="assets/images/icons/crown-black-fill.svg"
-                      className="size-6"
-                      alt="icon"
-                    />
-                  </div>
-                  <p className="absolute transform -translate-x-1/2 left-1/2 -bottom-2 rounded-[20px] py-1 px-2 bg-monday-black text-white w-fit font-extrabold text-[8px]">
-                    PRO
-                  </p>
-                </div>
-              </div>
+              <UserProfileCard />
             </div>
-            <UserProfileCard />
           </div>
 
           {/* Merchant Info */}
           <main className="flex flex-col gap-6 flex-1">
-            <section
-              id="Warehouse-Info"
-              className="flex items-center justify-between rounded-3xl p-[18px] gap-3 bg-white"
-            >
-              <div className="flex size-16 rounded-2xl bg-monday-background items-center justify-center overflow-hidden">
-                <img
-                  src={merchant.photo}
-                  className="size-full object-contain"
-                  alt="icon"
-                />
+            <section className="flex flex-col sm:flex-row items-center justify-between rounded-3xl p-4 gap-3 bg-white shadow-sm">
+              <div className="flex w-16 h-16 rounded-2xl bg-gray-100 items-center justify-center overflow-hidden">
+                <img src={merchant.photo} className="object-contain w-full h-full" alt="icon" />
               </div>
-              <div className="flex flex-col gap-2 flex-1">
+              <div className="flex flex-col gap-2 flex-1 text-center sm:text-left">
                 <p className="font-semibold text-xl">{merchant.name}</p>
-                <p className="flex items-center gap-1 font-medium text-lg text-monday-gray">
-                  <img
-                    src="assets/images/icons/call-grey.svg"
-                    className="size-6 flex shrink-0"
-                    alt="icon"
-                  />
+                <p className="flex items-center justify-center sm:justify-start gap-1 font-medium text-lg text-gray-500">
+                  <img src="assets/images/icons/call-grey.svg" className="w-5 h-5" alt="icon" />
                   <span>{merchant.phone}</span>
                 </p>
               </div>
-              <div className="flex flex-col gap-2 flex-1">
-                <p className="flex items-center gap-1 font-medium text-monday-gray">
-                  <img
-                    src="assets/images/icons/user-grey.svg"
-                    className="size-4 flex shrink-0"
-                    alt="icon"
-                  />
-                  <span>Keeper Name:</span>
+              <div className="flex flex-col gap-1 text-center sm:text-left">
+                <p className="flex items-center gap-1 font-medium text-gray-500">
+                  <img src="assets/images/icons/user-grey.svg" className="w-4 h-4" alt="icon" />
+                  <span>Keeper:</span>
                 </p>
                 <p className="font-semibold text-lg">
                   {merchant.keeper?.name || "No Keeper Assigned"}
@@ -237,109 +197,30 @@ const MyMerchantProfile = () => {
             </section>
 
             {/* Product List */}
-            <section
-              id="Products"
-              className="flex flex-col gap-6 flex-1 rounded-3xl p-[18px] px-0 bg-white"
-            >
-              <div
-                id="Header"
-                className="flex items-center justify-between px-[18px]"
-              >
-                <div className="flex flex-col gap-[6px]">
-                  <p className="flex items-center gap-[6px]">
+            <section className="flex flex-col gap-6 flex-1 rounded-3xl p-4 bg-white shadow-sm">
+              <div className="flex flex-col sm:flex-row items-center justify-between">
+                <div className="flex flex-col gap-[6px] text-center sm:text-left">
+                  <p className="flex items-center justify-center sm:justify-start gap-[6px]">
                     <img
                       src="assets/images/icons/buildings-2-black.svg"
-                      className="size-6 flex shrink-0"
+                      className="w-6 h-6"
                       alt="icon"
                     />
                     <span className="font-semibold text-2xl">
-                      {merchant.products.length} Total Products
+                      {merchant.products?.length || 0} Total Products
                     </span>
                   </p>
-                  <p className="font-semibold text-lg text-monday-gray">
-                    View and update your Product Warehouses list here.
+                  <p className="font-semibold text-lg text-gray-500">
+                    View and manage your warehouse products.
                   </p>
                 </div>
               </div>
-              <hr className="border-monday-border" />
-              <div
-                id="Product-List"
-                className="flex flex-col px-4 gap-5 flex-1"
-              >
-                <div className="flex items-center justify-between">
-                  <p className="font-semibold text-xl">All Products</p>
-                </div>
-                {merchant.products.length > 0 ? (
-                  <div className="flex flex-col gap-5">
-                    {merchant.products.map((product) => (
-                      <React.Fragment key={product.id}>
-                        <div className="card flex items-center justify-between gap-6">
-                          <div className="flex items-center gap-3 w-[340px] shrink-0">
-                            <div className="flex size-[86px] rounded-2xl bg-monday-background items-center justify-center overflow-hidden">
-                              <img
-                                src={product.thumbnail}
-                                className="size-full object-contain"
-                                alt="icon"
-                              />
-                            </div>
-                            <div className="flex flex-col gap-2 flex-1">
-                              <p className="font-semibold text-xl w-[242px] truncate">
-                                {product.name}
-                              </p>
-                              <p className="font-semibold text-xl text-monday-blue">
-                                Rp {product.price.toLocaleString("id")}
-                              </p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-[6px] w-[187px] shrink-0">
-                            <img
-                              src="assets/images/icons/box-black.svg"
-                              className="size-6 flex shrink-0"
-                              alt="icon"
-                            />
-                            <p className="font-semibold text-lg text-nowrap w-[124px] truncate">
-                              {product.pivot?.stock} Stock
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-[6px] w-[187px] shrink-0">
-                            <img
-                              src="assets/images/icons/Makeup-black.svg"
-                              className="size-6 flex shrink-0"
-                              alt="icon"
-                            />
-                            <p className="font-semibold text-lg text-nowrap w-[124px] truncate">
-                              {product.category?.name || "No Category"}
-                            </p>
-
-                          </div>
-                          <div className="flex items-center gap-4">
-                            <button
-                              onClick={() => setSelectedProductId(product.id)}
-                              className="btn btn-primary-opacity min-w-[130px] font-semibold"
-                            >
-                              Details
-                            </button>
-                          </div>
-                        </div>
-                        <hr className="border-monday-border last:hidden" />
-                      </React.Fragment>
-                    ))}
-                  </div>
-                ) : (
-                  <div
-                    id="Empty-State"
-                    className="flex flex-col flex-1 items-center justify-center rounded-[20px] border-dashed border-2 border-monday-gray gap-6"
-                  >
-                    <img
-                      src="assets/images/icons/document-text-grey.svg"
-                      className="size-[52px]"
-                      alt="icon"
-                    />
-                    <p className="font-semibold text-monday-gray">
-                      Oops, it looks like there's no data yet.
-                    </p>
-                  </div>
-                )}
+              <hr className="border-gray-200" />
+              <div className="flex flex-col px-1 sm:px-4 gap-4 flex-1">
+                <CategoryAccordion
+                  products={merchant.products}
+                  onShowDetails={handleShowDetails}
+                />
               </div>
             </section>
           </main>
@@ -347,59 +228,68 @@ const MyMerchantProfile = () => {
       </div>
 
       {/* Modal */}
-      {selectedProductId && selectedProduct && (
-        <div className="modal flex flex-1 items-center justify-center h-full fixed top-0 w-full">
+      {selectedProduct && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fadeIn"
+          onClick={closeModal}
+        >
           <div
-            onClick={() => setSelectedProductId(null)}
-            className="absolute w-full h-full bg-[#292D32B2] cursor-pointer"
-          />
-          <div className="relative flex flex-col w-[406px] shrink-0 rounded-3xl p-[18px] gap-5 bg-white">
-            <div className="modal-header flex items-center justify-between">
-              <p className="font-semibold text-xl">Product Details</p>
+            className="relative bg-white rounded-3xl p-6 w-[90%] sm:w-[420px] shadow-xl animate-slideUp"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-semibold text-xl">Product Details</h2>
               <button
-                onClick={() => setSelectedProductId(null)}
-                className="flex size-14 rounded-full items-center justify-center bg-monday-gray-background"
+                onClick={closeModal}
+                className="flex w-10 h-10 rounded-full items-center justify-center bg-gray-100 hover:bg-gray-200 transition"
               >
                 <img
                   src="assets/images/icons/close-circle-black.svg"
-                  className="size-6"
-                  alt="icon"
+                  className="w-5 h-5"
+                  alt="close"
                 />
               </button>
             </div>
-            <div className="modal-content flex flex-col rounded-3xl border border-monday-border p-4 gap-5">
-              <div className="flex items-center justify-between">
-                <div className="flex flex-col gap-2">
-                  <p className="flex items-center gap-[6px] font-semibold text-lg">
-                    {selectedProduct.category?.photo && (
-                      <img
-                        src={selectedProduct.category.photo}
-                        className="size-6 flex shrink-0"
-                        alt="icon"
-                      />
-                    )}
-                    {selectedProduct.name}
-                  </p>
-                  <p className="font-bold text-lg">
+
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col sm:flex-row items-center justify-between">
+                <div className="flex flex-col gap-1 text-center sm:text-left">
+                  <p className="font-bold text-lg">{selectedProduct.name}</p>
+                  <p className="text-gray-500 text-sm">
                     {selectedProduct.category?.name || "No Category"}
                   </p>
-                  <p className="font-bold text-lg">{selectedProduct.category.name}</p>
-                  <p className="font-semibold text-[17px] text-monday-blue">
+                  <p className="text-monday-blue font-semibold text-lg">
                     Rp {selectedProduct.price.toLocaleString("id")}
                   </p>
                 </div>
-                <div className="flex size-[100px] rounded-2xl bg-monday-gray-background items-center justify-center overflow-hidden">
+                <div className="w-[100px] h-[100px] rounded-2xl bg-gray-50 flex items-center justify-center overflow-hidden mt-3 sm:mt-0">
                   <img
                     src={selectedProduct.thumbnail}
-                    className="size-full object-contain"
-                    alt="icon"
+                    alt={selectedProduct.name}
+                    className="object-contain w-full h-full"
                   />
                 </div>
               </div>
-              <hr className="border-monday-border" />
+
+              <hr className="border-gray-200" />
+
               <div>
-                <p className="font-medium text-sm text-monday-gray">Product About</p>
-                <p className="font-semibold leading-[160%]">{selectedProduct.about}</p>
+                <p className="text-sm text-gray-500 mb-1">Stock</p>
+                <p className="font-semibold">{selectedProduct.pivot?.stock ?? 0} pcs</p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500 mb-1">Warehouse</p>
+                <p className="font-semibold">
+                  {selectedProduct.warehouse?.name || "No Warehouse"}
+                </p>
+              </div>
+
+              <div>
+                <p className="text-sm text-gray-500 mb-1">About</p>
+                <p className="font-medium leading-relaxed">
+                  {selectedProduct.about || "No description provided."}
+                </p>
               </div>
             </div>
           </div>

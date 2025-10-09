@@ -1,184 +1,282 @@
+import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import UserProfileCard from "../../components/UserProfileCard";
-import React, { useState } from "react";
-import { useMerchants } from "../../hooks/useMerchants";
+import { useAuth } from "../../hooks/useAuth";
 
 const MerchantList = () => {
-    const { merchants, getMerchant, deleteMerchant } = useMerchants();
-    const [selectedMerchantId, setSelectedMerchantId] = useState(null);
-    const selectedMerchant = selectedMerchantId ? getMerchant(selectedMerchantId) : null;
+  const { user } = useAuth();
 
-    
+  const [merchants, setMerchants] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [products, setProducts] = useState([]);
 
-    return (
-        <div id="main-container" className="flex flex-1">
-            <div id="Content" className="flex flex-col flex-1 p-6 pt-0">
-                {/* Top Bar */}
-                <div className="flex items-center w-full gap-6 mt-[30px] mb-6">
-                    <div className="flex items-center gap-6 h-[92px] bg-white w-full rounded-3xl p-[18px]">
-                        <h1 className="font-bold text-2xl">Manage Merchants</h1>
-                    </div>
-                    <UserProfileCard />
-                </div>
+  const [openMerchant, setOpenMerchant] = useState(null);
+  const [openCategory, setOpenCategory] = useState(null);
 
-                {/* Content */}
-                <main className="flex flex-col gap-6 flex-1">
-                    <section className="flex flex-col gap-6 flex-1 rounded-3xl p-[18px] px-0 bg-white">
-                        {/* Header */}
-                        <div className="flex items-center justify-between px-[18px]">
-                            <div>
-                                <p className="flex items-center gap-[6px]">
-                                    <img
-                                        src="/assets/images/icons/buildings-2-black.svg"
-                                        className="size-6"
-                                        alt="icon"
-                                    />
-                                    <span className="font-semibold text-2xl">
-                                        {merchants.length} Total Merchants
-                                    </span>
-                                </p>
-                                <p className="font-semibold text-lg text-monday-gray">
-                                    View and update your Merchants list here.
-                                </p>
-                            </div>
-                            <Link to={"/merchants/add"} className="btn btn-primary font-semibold">
-                                Add New
-                                <img
-                                    src="/assets/images/icons/add-square-white.svg"
-                                    className="flex size-6 shrink-0"
-                                    alt="icon"
-                                />
-                            </Link>
+  useEffect(() => {
+    setMerchants(JSON.parse(localStorage.getItem("merchants")) || []);
+    setCategories(JSON.parse(localStorage.getItem("categories")) || []);
+    setProducts(JSON.parse(localStorage.getItem("products")) || []);
+  }, []);
+
+  if (!user) return <p>Loading user...</p>;
+
+  const toggleMerchant = (id) => {
+    setOpenMerchant(openMerchant === id ? null : id);
+    setOpenCategory(null);
+  };
+
+  const toggleCategory = (id) => {
+    setOpenCategory(openCategory === id ? null : id);
+  };
+
+  const handleDeleteMerchant = (id) => {
+    if (!window.confirm("Are you sure you want to delete this merchant?")) return;
+    const updated = merchants.filter((m) => m.id !== id);
+    setMerchants(updated);
+    localStorage.setItem("merchants", JSON.stringify(updated));
+  };
+
+  const getCategoriesByMerchant = (merchantId) => {
+    return categories.filter((c) => String(c.merchant_id) === String(merchantId));
+  };
+
+  const getProductsByCategory = (categoryId) => {
+    return products.filter((p) => String(p.category_id) === String(categoryId));
+  };
+
+  return (
+    <div id="main-container" className="flex flex-1 bg-gray-50 min-h-screen">
+      <div id="Content" className="flex flex-col flex-1 p-6 pt-0">
+        {/* Top bar */}
+        <div id="Top-Bar" className="flex items-center w-full gap-6 mt-[30px] mb-6 flex-wrap">
+          <div className="flex items-center gap-6 h-[92px] bg-white w-full rounded-3xl p-[18px] flex-wrap justify-between">
+            <h1 className="font-bold text-2xl">Manage Merchants</h1>
+            <UserProfileCard />
+          </div>
+        </div>
+
+        <main className="flex flex-col gap-6 flex-1">
+          <section className="flex flex-col gap-6 flex-1 rounded-3xl p-[18px] px-0 bg-white">
+            {/* Header */}
+            <div className="flex items-center justify-between px-[18px] flex-wrap gap-4">
+              <div className="flex flex-col gap-[6px]">
+                <p className="flex items-center gap-[6px]">
+                  <img
+                    src="/assets/images/icons/shop-black.svg"
+                    className="size-6 flex shrink-0"
+                    alt="icon"
+                  />
+                  <span className="font-semibold text-2xl">
+                    {merchants.length} Total Merchants
+                  </span>
+                </p>
+                <p className="font-semibold text-lg text-monday-gray">
+                  View and manage your merchant list.
+                </p>
+              </div>
+
+              {user.roles.includes("manager") && (
+                <Link
+                  to={"/merchants/add"}
+                  className="btn btn-primary font-semibold flex items-center gap-2"
+                >
+                  Add New
+                  <img
+                    src="/assets/images/icons/add-square-white.svg"
+                    className="size-6"
+                    alt="icon"
+                  />
+                </Link>
+              )}
+            </div>
+
+            <hr className="border-monday-border" />
+
+            {/* Merchant list */}
+            <div className="flex flex-col px-4 gap-5 flex-1">
+              {merchants.length > 0 ? (
+                merchants.map((merchant) => {
+                  const merchantCategories = getCategoriesByMerchant(merchant.id);
+
+                  return (
+                    <div
+                      key={merchant.id}
+                      className="border rounded-2xl bg-white shadow-sm overflow-hidden"
+                    >
+                      {/* Merchant header */}
+                      <div
+                        onClick={() => toggleMerchant(merchant.id)}
+                        className="flex items-center justify-between p-4 cursor-pointer hover:bg-gray-50 transition"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="size-[64px] rounded-xl bg-gray-100 flex items-center justify-center overflow-hidden">
+                            <img
+                              src={merchant.photo}
+                              alt={merchant.name}
+                              className="w-full h-full object-contain"
+                            />
+                          </div>
+                          <div className="flex flex-col gap-1">
+                            <p className="font-semibold text-xl">{merchant.name}</p>
+                            <p className="text-sm text-gray-500">{merchant.phone}</p>
+                          </div>
                         </div>
-                        <hr className="border-monday-border" />
 
-                        {/* Merchant List */}
-                        <div className="flex flex-col px-4 gap-5 flex-1">
-                            {merchants.length > 0 ? (
-                                merchants.map((merchant) => (
-                                    <React.Fragment key={merchant.id}>
-                                        <div className="card flex items-center justify-between gap-3">
-                                            {/* Left */}
-                                            <div className="flex items-center gap-3 w-[326px] shrink-0">
-                                                <div className="flex size-[86px] rounded-2xl bg-monday-background items-center justify-center overflow-hidden">
-                                                    <img src={merchant.photo} className="size-full object-contain" alt="icon" />
-                                                </div>
-                                                <div className="flex flex-col gap-2 flex-1">
-                                                    <p className="font-semibold text-xl w-[228px] truncate">{merchant.name}</p>
-                                                    <p className="flex items-center gap-1 font-medium text-lg text-monday-gray">
-                                                        <img
-                                                            src="/assets/images/icons/user-thin-grey.svg"
-                                                            className="size-6"
-                                                            alt="icon"
-                                                        />
-                                                        <span>{merchant.keeper?.name || "No keeper assigned"}</span>
-                                                    </p>
-                                                </div>
-                                            </div>
-
-                                            {/* Middle */}
-                                            <div className="flex items-center gap-2 min-w-[266px]">
-                                                <img
-                                                    src="/assets/images/icons/bag-black.svg"
-                                                    className="size-6"
-                                                    alt="icon"
-                                                />
-                                                <p className="font-semibold text-lg">
-                                                    {merchant.productIds?.length || 0} Products
-                                                </p>
-                                            </div>
-
-                                            {/* Right */}
-                                            <div className="flex items-center gap-4">
-                                                <button
-                                                    onClick={() => setSelectedMerchantId(merchant.id)}
-                                                    className="btn btn-primary-opacity min-w-[100px]"
-                                                >
-                                                    Details
-                                                </button>
-                                                <Link to={`/merchants/edit/${merchant.id}`} className="btn btn-black min-w-[100px]">
-                                                    Edit
-                                                </Link>
-                                                <button
-                                                    onClick={() => {
-                                                        deleteMerchant(merchant.id);
-                                                        if (selectedMerchantId === merchant.id) {
-                                                            setSelectedMerchantId(null); // auto close detail kalau dihapus
-                                                        }
-                                                    }}
-                                                    className="btn btn-red min-w-[100px]"
-                                                >
-                                                    Delete
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <hr className="border-monday-border last:hidden" />
-                                    </React.Fragment>
-                                ))
-                            ) : (
-                                <p className="text-center text-monday-gray">Oops, no merchants available.</p>
-                            )}
+                        <div className="flex items-center gap-2">
+                          <p className="font-semibold text-xl text-center">
+                            {merchantCategories.length} Categories
+                          </p>
+                          <img
+                            src={
+                              openMerchant === merchant.id
+                                ? "/assets/images/icons/arrow-up-black.svg"
+                                : "/assets/images/icons/arrow-down-black.svg"
+                            }
+                            className="size-5"
+                            alt="toggle"
+                          />
                         </div>
+                      </div>
 
-                        {/* Selected Merchant Details */}
-                        {selectedMerchantId && selectedMerchant && (
-                            <div className="fixed inset-0 flex items-center justify-center z-50">
-                                {/* Overlay */}
+                      {/* Category dropdown */}
+                      <div
+                        className={`transition-all duration-300 overflow-hidden ${
+                          openMerchant === merchant.id ? "max-h-[2000px] p-4" : "max-h-0 p-0"
+                        }`}
+                      >
+                        {merchantCategories.length > 0 ? (
+                          merchantCategories.map((category) => {
+                            const categoryProducts = getProductsByCategory(category.id);
+                            return (
+                              <div
+                                key={category.id}
+                                className="border rounded-xl mb-3 bg-gray-50 shadow-sm overflow-hidden"
+                              >
                                 <div
-                                    onClick={() => setSelectedMerchantId(null)}
-                                    className="absolute inset-0 bg-[#292D32B2] cursor-pointer"
-                                />
-
-                                {/* Modal Content */}
-                                <div className="relative z-10 flex flex-col w-[406px] shrink-0 rounded-3xl p-[18px] gap-5 bg-white">
-                                    {/* Header */}
-                                    <div className="modal-header flex items-center justify-between">
-                                        <p className="font-semibold text-xl">Merchant Details</p>
-                                        <button
-                                            onClick={() => setSelectedMerchantId(null)}
-                                            className="flex size-14 rounded-full items-center justify-center bg-monday-gray-background"
-                                        >
-                                            ✕
-                                        </button>
+                                  onClick={() => toggleCategory(category.id)}
+                                  className="flex justify-between items-center p-3 cursor-pointer hover:bg-gray-100 transition"
+                                >
+                                  <div className="flex items-center gap-3">
+                                    <img
+                                      src={category.photo}
+                                      className="size-10 object-contain rounded-full bg-white"
+                                      alt={category.name}
+                                    />
+                                    <div>
+                                      <p className="font-semibold text-lg">{category.name}</p>
+                                      <p className="text-sm text-gray-500">{category.tagline}</p>
                                     </div>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <p className="font-medium text-gray-700">
+                                      {categoryProducts.length} Products
+                                    </p>
+                                    <img
+                                      src={
+                                        openCategory === category.id
+                                          ? "/assets/images/icons/arrow-up-black.svg"
+                                          : "/assets/images/icons/arrow-down-black.svg"
+                                      }
+                                      className="size-5"
+                                      alt="toggle"
+                                    />
+                                  </div>
+                                </div>
 
-                                    {/* Content */}
-                                    <div className="modal-content flex flex-col gap-5">
-                                        <div className="flex items-center gap-3">
-                                            <div className="flex size-[86px] rounded-2xl bg-monday-background items-center justify-center overflow-hidden">
-                                                <img
-                                                    src={selectedMerchant.photo}
-                                                    className="size-full object-contain"
-                                                    alt="icon"
-                                                />
+                                {/* Product list */}
+                                <div
+                                  className={`transition-all duration-300 overflow-hidden ${
+                                    openCategory === category.id
+                                      ? "max-h-[1500px] p-3"
+                                      : "max-h-0 p-0"
+                                  }`}
+                                >
+                                  {categoryProducts.length > 0 ? (
+                                    <div className="flex flex-col gap-2">
+                                      {categoryProducts.map((product) => (
+                                        <div
+                                          key={product.id}
+                                          className="flex flex-col sm:flex-row justify-between bg-white rounded-xl p-3 shadow-sm hover:shadow-md transition"
+                                        >
+                                          <div className="flex items-center gap-3">
+                                            <div className="size-[60px] rounded-lg overflow-hidden bg-gray-100">
+                                              <img
+                                                src={
+                                                  product.photo ||
+                                                  "/assets/images/icons/box-black.svg"
+                                                }
+                                                alt={product.name}
+                                                className="object-contain w-full h-full"
+                                              />
                                             </div>
                                             <div className="flex flex-col">
-                                                <p className="font-semibold text-lg">{selectedMerchant.name}</p>
-                                                <p className="text-monday-gray">
-                                                    Keeper: {selectedMerchant.keeper?.name || "No keeper assigned"}
-                                                </p>
-
-                                                <p className="text-monday-gray">
-                                                    Phone: {selectedMerchant.phone}
-                                                </p>
-                                                <p className="text-monday-gray">
-                                                    Address: {selectedMerchant.address}
-                                                </p>
+                                              <p className="font-semibold">{product.name}</p>
+                                              <p className="text-sm text-gray-500">
+                                                Stock:{" "}
+                                                <span className="font-medium">
+                                                  {product.stock || 0}
+                                                </span>
+                                              </p>
                                             </div>
+                                          </div>
+                                          <div className="flex items-center justify-between sm:justify-end gap-4 mt-3 sm:mt-0">
+                                            <p className="font-semibold text-monday-blue text-lg">
+                                              Rp {product.price?.toLocaleString("id") || 0}
+                                            </p>
+                                            <Link
+                                              to={`/products/detail/${product.id}`}
+                                              className="btn btn-primary-opacity min-w-[100px] font-semibold"
+                                            >
+                                              Details
+                                            </Link>
+                                          </div>
                                         </div>
-                                        <p className="font-semibold">
-                                            Products: {selectedMerchant.products.length}
-                                        </p>
+                                      ))}
                                     </div>
+                                  ) : (
+                                    <p className="italic text-gray-500 pl-2">
+                                      No products in this category.
+                                    </p>
+                                  )}
                                 </div>
-                            </div>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <p className="italic text-gray-500 pl-2">
+                            No categories in this merchant.
+                          </p>
                         )}
+                      </div>
 
-                    </section>
-                </main>
+                      {/* Merchant actions */}
+                      <div className="flex justify-end gap-3 p-4 border-t bg-white">
+                        <Link
+                          to={`/merchants/edit/${merchant.id}`}
+                          className="btn btn-black font-semibold"
+                        >
+                          Edit
+                        </Link>
+                        <button
+                          onClick={() => handleDeleteMerchant(merchant.id)}
+                          className="btn btn-red font-semibold"
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })
+              ) : (
+                <p className="text-gray-500 italic px-6">No merchants found.</p>
+              )}
             </div>
-        </div>
-    );
+          </section>
+        </main>
+      </div>
+    </div>
+  );
 };
 
 export default MerchantList;

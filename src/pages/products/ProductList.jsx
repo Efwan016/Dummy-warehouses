@@ -81,6 +81,10 @@ const ProductList = () => {
                             <p className="font-semibold text-xl text-monday-blue">
                               Rp {product.price.toLocaleString("id")}
                             </p>
+                            <p className="text-monday-gray">
+                              Stock: <span className="font-semibold">{product.stock}</span>
+                            </p>
+
                           </div>
                         </div>
 

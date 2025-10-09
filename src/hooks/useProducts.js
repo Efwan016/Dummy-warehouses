@@ -9,13 +9,21 @@ const MERCHANTS_KEY = "merchants";
 export const useProducts = () => {
   const [products, setProducts] = useState([]);
 
-  // Load from localStorage on start
+  // Load from localStorage on start + listen perubahan
   useEffect(() => {
-    const stored = JSON.parse(localStorage.getItem(PRODUCTS_KEY)) || [];
-    setProducts(stored);
+    const loadProducts = () => {
+      const stored = JSON.parse(localStorage.getItem(PRODUCTS_KEY)) || [];
+      setProducts(stored);
+    };
+
+    loadProducts();
+
+    // Listen event global untuk update otomatis antar komponen
+    window.addEventListener("products-changed", loadProducts);
+    return () => window.removeEventListener("products-changed", loadProducts);
   }, []);
 
-  // Save helper
+  // Helper save
   const saveProducts = (data) => {
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(data));
     setProducts(data);
@@ -25,106 +33,97 @@ export const useProducts = () => {
   const createProduct = (product) => {
     const stored = JSON.parse(localStorage.getItem(PRODUCTS_KEY)) || [];
 
-    // Simpan data ringan saja
     const lightProduct = {
       id: product.id,
       name: product.name,
       category_id: product.category_id,
       warehouse_id: product.warehouse_id,
       merchant_id: product.merchant_id,
-      photo: product.thumbnail || product.photoUrl,
+      photo:
+        product.photo ||
+        product.thumbnail ||
+        product.photoUrl ||
+        product.imagePreview ||
+        "",
       price: product.price,
+      stock: product.stock || 0,
     };
 
     const updated = [...stored, lightProduct];
     saveProducts(updated);
 
-    // Update entity lain pakai product.id
-    // Category
-    if (product.category_id) {
-      const categories = JSON.parse(localStorage.getItem(CATEGORIES_KEY)) || [];
-      const updatedCategories = categories.map(c =>
-        c.id === Number(product.category_id)
-          ? { ...c, productIds: [...(c.productIds || []), product.id] }
-          : c
-      );
-      localStorage.setItem(CATEGORIES_KEY, JSON.stringify(updatedCategories));
-    }
+    // Update relasi
+    syncEntitiesAfterChange(lightProduct, "add");
 
-    // Warehouse
-    if (product.warehouse_id) {
-      const warehouses = JSON.parse(localStorage.getItem(WAREHOUSES_KEY)) || [];
-      const updatedWarehouses = warehouses.map(w =>
-        w.id === Number(product.warehouse_id)
-          ? { ...w, productIds: [...(w.productIds || []), product.id] }
-          : w
-      );
-      localStorage.setItem(WAREHOUSES_KEY, JSON.stringify(updatedWarehouses));
-    }
-
-    // Merchant
-    if (product.merchant_id) {
-      const merchants = JSON.parse(localStorage.getItem(MERCHANTS_KEY)) || [];
-      const updatedMerchants = merchants.map(m =>
-        m.id === Number(product.merchant_id)
-          ? { ...m, productIds: [...(m.productIds || []), product.id] }
-          : m
-      );
-      localStorage.setItem(MERCHANTS_KEY, JSON.stringify(updatedMerchants));
-    }
-
-    // dispatch
     window.dispatchEvent(new Event("products-changed"));
   };
 
   // DELETE PRODUCT + sync
   const deleteProduct = (id) => {
-    // 1️⃣ Hapus product dari products
     const stored = JSON.parse(localStorage.getItem(PRODUCTS_KEY)) || [];
-    const updatedProducts = stored.filter((p) => p.id !== id);
+    const target = stored.find((p) => Number(p.id) === Number(id));
+
+    const updatedProducts = stored.filter((p) => Number(p.id) !== Number(id));
     localStorage.setItem(PRODUCTS_KEY, JSON.stringify(updatedProducts));
 
-    // 2️⃣ Hapus productId dari categories
-    const categories = JSON.parse(localStorage.getItem(CATEGORIES_KEY)) || [];
-    const updatedCategories = categories.map(c => ({
-      ...c,
-      productIds: (c.productIds || []).filter(pid => pid !== id)
-    }));
-    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(updatedCategories));
+    // Sync ke entitas lain
+    if (target) syncEntitiesAfterChange(target, "remove");
 
-    // 3️⃣ Hapus productId dari warehouses
-    const warehouses = JSON.parse(localStorage.getItem(WAREHOUSES_KEY)) || [];
-    const updatedWarehouses = warehouses.map(w => ({
-      ...w,
-      productIds: (w.productIds || []).filter(pid => pid !== id)
-    }));
-    localStorage.setItem(WAREHOUSES_KEY, JSON.stringify(updatedWarehouses));
-
-    // 4️⃣ Hapus productId dari merchants
-    const merchants = JSON.parse(localStorage.getItem(MERCHANTS_KEY)) || [];
-    const updatedMerchants = merchants.map(m => ({
-      ...m,
-      productIds: (m.productIds || []).filter(pid => pid !== id)
-    }));
-    localStorage.setItem(MERCHANTS_KEY, JSON.stringify(updatedMerchants));
-
-    // 5️⃣ Dispatch event supaya semua list update
     window.dispatchEvent(new Event("products-changed"));
   };
-
 
   // UPDATE PRODUCT
   const updateProduct = (id, updatedData) => {
     const stored = JSON.parse(localStorage.getItem(PRODUCTS_KEY)) || [];
-    const updated = stored.map((p) => (p.id === id ? { ...p, ...updatedData } : p));
+    const updated = stored.map((p) =>
+      Number(p.id) === Number(id) ? { ...p, ...updatedData } : p
+    );
     saveProducts(updated);
-
     window.dispatchEvent(new Event("products-changed"));
   };
 
   const getProduct = (id) => {
     const stored = JSON.parse(localStorage.getItem(PRODUCTS_KEY)) || [];
-    return stored.find((p) => p.id === id) || null;
+    return stored.find((p) => Number(p.id) === Number(id)) || null;
+  };
+
+  // --- 🔄 Utility untuk sinkron relasi ---
+  const syncEntitiesAfterChange = (product, action) => {
+    // CATEGORY
+    const categories = JSON.parse(localStorage.getItem(CATEGORIES_KEY)) || [];
+    const updatedCategories = categories.map((c) => {
+      if (Number(c.id) === Number(product.category_id)) {
+        const productIds = new Set(c.productIds || []);
+        action === "add" ? productIds.add(product.id) : productIds.delete(product.id);
+        return { ...c, productIds: [...productIds], totalProducts: productIds.size };
+      }
+      return c;
+    });
+    localStorage.setItem(CATEGORIES_KEY, JSON.stringify(updatedCategories));
+
+    // WAREHOUSE
+    const warehouses = JSON.parse(localStorage.getItem(WAREHOUSES_KEY)) || [];
+    const updatedWarehouses = warehouses.map((w) => {
+      if (Number(w.id) === Number(product.warehouse_id)) {
+        const productIds = new Set(w.productIds || []);
+        action === "add" ? productIds.add(product.id) : productIds.delete(product.id);
+        return { ...w, productIds: [...productIds], totalProducts: productIds.size };
+      }
+      return w;
+    });
+    localStorage.setItem(WAREHOUSES_KEY, JSON.stringify(updatedWarehouses));
+
+    // MERCHANT
+    const merchants = JSON.parse(localStorage.getItem(MERCHANTS_KEY)) || [];
+    const updatedMerchants = merchants.map((m) => {
+      if (Number(m.id) === Number(product.merchant_id)) {
+        const productIds = new Set(m.productIds || []);
+        action === "add" ? productIds.add(product.id) : productIds.delete(product.id);
+        return { ...m, productIds: [...productIds], totalProducts: productIds.size };
+      }
+      return m;
+    });
+    localStorage.setItem(MERCHANTS_KEY, JSON.stringify(updatedMerchants));
   };
 
   return {
