@@ -45,9 +45,12 @@ const StepOne = ({ handleNextStep }) => {
   });
 
   const onSubmit = (data) => {
-    setTransaction({ ...transaction, ...data });
+    const updatedTransaction = { ...transaction, ...data };
+    setTransaction(updatedTransaction);
+    localStorage.setItem("transaction", JSON.stringify(updatedTransaction));
     handleNextStep();
   };
+
 
   return (
     <div className="flex gap-6">
