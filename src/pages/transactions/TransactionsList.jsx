@@ -93,23 +93,29 @@ const TransactionList = () => {
                           <div key={tp.id} className="card flex items-center justify-between gap-3">
                             <div className="flex items-center gap-3 w-[420px] shrink-0">
                               <div className="flex size-[86px] rounded-2xl bg-monday-background items-center justify-center overflow-hidden">
-                                <img src={tp.product.photo} className="size-full object-contain" alt="icon" />
+                                <img
+                                  src={tp.photo || "/assets/images/icons/box-black.svg"}
+                                  className="size-full object-contain"
+                                  alt={tp.name}
+                                />
                               </div>
                               <div className="flex flex-col gap-2 flex-1">
-                                <p className="font-semibold text-xl">{tp.product.name}</p>
+                                <p className="font-semibold text-xl">{tp.name}</p>
                                 <p className="font-semibold text-xl text-monday-blue">
-                                  Rp {tp.price.toLocaleString("id")} <span className="text-monday-gray">({tp.qty}x)</span>
+                                  Rp {tp.price?.toLocaleString("id")}{" "}
+                                  <span className="text-monday-gray">({tp.qty}x)</span>
                                 </p>
                               </div>
                             </div>
                             <button
-                              onClick={() => setSelectedProduct(tp.product)}
+                              onClick={() => setSelectedProduct(tp)}
                               className="btn btn-primary-opacity min-w-[130px] font-semibold"
                             >
                               Details
                             </button>
                           </div>
                         ))}
+
                     </div>
 
                     {/* Grand Total */}

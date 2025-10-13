@@ -277,49 +277,52 @@ const Overview = () => {
 
                         {openTransactionIds.includes(tx.id) && (
                           <div className="flex flex-col gap-5">
-                            {tx.transaction_products.map((tp) => (
-                              <div key={tp.id}>
-                                <div className="flex items-center justify-between gap-3">
-                                  <div className="flex items-center gap-3 w-full">
-                                    <div className="flex size-[86px] rounded-2xl bg-monday-background items-center justify-center overflow-hidden">
+                            {tx.transaction_products
+                              ?.filter((tp) => tp?.product)
+                              .map((tp) => (
+                                <div key={tp.id}>
+                                  <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-3 w-full">
+                                      <div className="flex size-[86px] rounded-2xl bg-monday-background items-center justify-center overflow-hidden">
+                                        <img
+                                          src={tp.product?.thumbnail || tp.product?.photo || "/assets/images/icons/box-black.svg"}
+                                          className="size-full object-contain"
+                                          alt={tp.product?.name || "Product"}
+                                          onError={(e) => (e.target.src = "/assets/images/icons/box-black.svg")}
+                                        />
+                                      </div>
+                                      <div className="flex flex-col gap-2 flex-1">
+                                        <p className="font-semibold text-xl line-clamp-1">
+                                          {tp.product.name}
+                                        </p>
+                                        <p className="font-semibold text-xl text-monday-blue">
+                                          Rp {tp.price.toLocaleString("id")}
+                                          <span className="text-monday-gray">
+                                            ({tp.quantity.toLocaleString("id")}x)
+                                          </span>
+                                        </p>
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-[6px] w-full">
                                       <img
-                                        src={tp.product.thumbnail}
-                                        className="size-full object-contain"
-                                        alt="product"
+                                        src="assets/images/icons/Makeup-black.svg"
+                                        className="size-6 flex shrink-0"
+                                        alt="icon"
                                       />
-                                    </div>
-                                    <div className="flex flex-col gap-2 flex-1">
-                                      <p className="font-semibold text-xl line-clamp-1">
-                                        {tp.product.name}
-                                      </p>
-                                      <p className="font-semibold text-xl text-monday-blue">
-                                        Rp {tp.price.toLocaleString("id")}
-                                        <span className="text-monday-gray">
-                                          ({tp.quantity.toLocaleString("id")}x)
-                                        </span>
+                                      <p className="font-semibold text-lg text-nowrap">
+                                        {tp.product.category.name}
                                       </p>
                                     </div>
+                                    <button
+                                      onClick={() => setSelectedProductId(tp.product.id)}
+                                      className="btn btn-primary-opacity min-w-[130px] font-semibold"
+                                    >
+                                      Details
+                                    </button>
                                   </div>
-                                  <div className="flex items-center gap-[6px] w-full">
-                                    <img
-                                      src="assets/images/icons/Makeup-black.svg"
-                                      className="size-6 flex shrink-0"
-                                      alt="icon"
-                                    />
-                                    <p className="font-semibold text-lg text-nowrap">
-                                      {tp.product.category.name}
-                                    </p>
-                                  </div>
-                                  <button
-                                    onClick={() => setSelectedProductId(tp.product.id)}
-                                    className="btn btn-primary-opacity min-w-[130px] font-semibold"
-                                  >
-                                    Details
-                                  </button>
+                                  <hr className="border-monday-border last:hidden" />
                                 </div>
-                                <hr className="border-monday-border last:hidden" />
-                              </div>
-                            ))}
+                              ))}
                           </div>
                         )}
                       </div>
@@ -375,9 +378,10 @@ const Overview = () => {
                 className="flex size-14 rounded-full items-center justify-center bg-monday-gray-background"
               >
                 <img
-                  src="assets/images/icons/close-circle-black.svg"
-                  className="size-6"
-                  alt="icon"
+                  src={selectedProduct?.thumbnail || selectedProduct?.photo || "/assets/images/icons/box-black.svg"}
+                  className="size-full object-contain"
+                  alt={selectedProduct?.name || "Product"}
+                  onError={(e) => (e.target.src = "/assets/images/icons/box-black.svg")}
                 />
               </button>
             </div>
@@ -386,7 +390,7 @@ const Overview = () => {
                 <div className="flex flex-col gap-2">
                   <p className="flex items-center gap-[6px] font-semibold text-lg">
                     <img
-                      src={selectedProduct.category.photo}
+                      src={selectedProduct?.category?.photo || "/assets/images/icons/box-black.svg"}
                       className="size-6 flex shrink-0"
                       alt="icon"
                     />

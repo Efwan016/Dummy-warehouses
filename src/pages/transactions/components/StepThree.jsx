@@ -31,32 +31,58 @@ const StepThree = ({ handlePrevStep }) => {
     if (!merchant || cart.length === 0) return;
     setIsPending(true);
 
+    // Buat payload yang lebih ringan
     const payload = {
       id: Date.now(),
       name: transaction.name,
       phone: transaction.phone,
-      merchant: merchant,
+      merchant: {
+        id: merchant.id,
+        name: merchant.name,
+        phone: merchant.phone,
+      },
       transaction_products: cart.map((product) => ({
         id: product.id,
+        name: product.name,
         qty: product.quantity,
         price: product.price,
-        product: { ...product },
+        category: product.category?.name || "-",
       })),
       grand_total: grandTotal,
+      date: new Date().toISOString(),
     };
 
-    const storedTransactions = JSON.parse(localStorage.getItem("transactions")) || [];
-    localStorage.setItem("transactions", JSON.stringify([...storedTransactions, payload]));
+    try {
+      const storedTransactions = JSON.parse(localStorage.getItem("transactions")) || [];
+      const newTransactions = [...storedTransactions, payload];
+      const jsonData = JSON.stringify(newTransactions);
 
-    // Clear cart & transaction after save
-    localStorage.removeItem("cart");
-    localStorage.removeItem("transaction");
-    setCart([]);
-    setTransaction({ name: "", phone: "" });
+      // Cek ukuran data sebelum disimpan (maks 4.5 MB)
+      const sizeMB = (jsonData.length / 1024 / 1024).toFixed(2);
+      if (sizeMB > 4.5) {
+        alert(`Data transaksi terlalu besar (${sizeMB} MB). Silakan hapus data lama dulu.`);
+        setIsPending(false);
+        return;
+      }
 
-    setIsPending(false);
-    navigate("/transactions");
+      // Simpan dengan aman
+      localStorage.setItem("transactions", jsonData);
+
+      // Bersihkan setelah save
+      localStorage.removeItem("cart");
+      localStorage.removeItem("transaction");
+      setCart([]);
+      setTransaction({ name: "", phone: "" });
+
+      navigate("/transactions");
+    } catch (error) {
+      console.error("Gagal menyimpan transaksi:", error);
+      alert("Gagal menyimpan data transaksi. Coba hapus data lama dulu.");
+    } finally {
+      setIsPending(false);
+    }
   };
+
 
   return (
     <section className="flex flex-col gap-6 rounded-3xl p-[18px] px-0">

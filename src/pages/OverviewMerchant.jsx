@@ -8,7 +8,6 @@ const getLocalData = (key) => JSON.parse(localStorage.getItem(key)) || [];
 const OverviewMerchant = () => {
   // Ambil semua data lokal
   const transactions = getLocalData("transactions");
-  const products = getLocalData("products");
 
   // Hitung total revenue & produk terjual
   const totalRevenue = transactions.reduce((sum, tx) => sum + (tx.grand_total || 0), 0);
@@ -168,36 +167,34 @@ const OverviewMerchant = () => {
                         />
                       </button>
 
-                      {openTransactionIds.includes(tx.id) && (
-                        <div className="mt-4 flex flex-col gap-4">
-                          {tx.transaction_products?.map((tp) => (
-                            <div
-                              key={tp.id}
-                              className="flex items-center justify-between border rounded-xl p-3 hover:bg-gray-50 transition"
-                            >
-                              <div className="flex items-center gap-3">
+                      {openTransactionIds.includes(tx.id) &&
+                        tx.transaction_products.map((tp) => (
+                          <div key={tp.id} className="card flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3 w-[420px] shrink-0">
+                              <div className="flex size-[86px] rounded-2xl bg-monday-background items-center justify-center overflow-hidden">
                                 <img
-                                  src={tp.product.thumbnail}
-                                  alt={tp.product.name}
-                                  className="w-14 h-14 rounded-lg object-cover"
+                                  src={tp.photo || "/assets/images/icons/box-black.svg"}
+                                  className="size-full object-contain"
+                                  alt={tp.name}
                                 />
-                                <div>
-                                  <p className="font-semibold text-lg">{tp.product.name}</p>
-                                  <p className="text-gray-500 text-sm">
-                                    Rp {tp.product.price.toLocaleString("id")} ({tp.quantity}x)
-                                  </p>
-                                </div>
                               </div>
-                              <button
-                                onClick={() => setSelectedProduct(tp.product)}
-                                className="btn btn-primary-opacity font-semibold"
-                              >
-                                Details
-                              </button>
+                              <div className="flex flex-col gap-2 flex-1">
+                                <p className="font-semibold text-xl">{tp.name}</p>
+                                <p className="font-semibold text-xl text-monday-blue">
+                                  Rp {tp.price?.toLocaleString("id")}{" "}
+                                  <span className="text-monday-gray">({tp.qty}x)</span>
+                                </p>
+                              </div>
                             </div>
-                          ))}
-                        </div>
-                      )}
+                            <button
+                              onClick={() => setSelectedProduct(tp)}
+                              className="btn btn-primary-opacity min-w-[130px] font-semibold"
+                            >
+                              Details
+                            </button>
+                          </div>
+                        ))}
+
                     </div>
 
                     <hr className="border-gray-200" />
