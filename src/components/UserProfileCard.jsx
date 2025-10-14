@@ -14,8 +14,8 @@ const UserProfileCard = () => {
       {/* User Photo */}
       <div className="flex rounded-full overflow-hidden w-12 h-12">
         <img
-          src={user.photo} 
-          alt={user.name}
+          src={user?.photo || "/assets/images/icons/user-thin-grey.svg"}
+          alt={user?.name || "User"}
           className="w-full h-full object-cover"
         />
       </div>

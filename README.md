@@ -1,40 +1,69 @@
-# 🏭 Warehouses Management App
+# 🏢 Adzani Warehouses — Frontend Only Demo
 
-A warehouse & user management system built with **React**, **TailwindCSS**, and **React Router**.  
-This project demonstrates CRUD operations, state management, and reusable UI components with a focus on scalability and clean code.
+**Adzani Warehouses Dummy** is a **React.js**-based warehouse management system built entirely on the **frontend**, using **LocalStorage** for data persistence.  
+It simulates a real-world warehouse & merchant management system — designed to demonstrate **data architecture, reactivity, and modular frontend design**.
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
-### 🏢 Warehouses
-- Add new warehouses  
-- Edit warehouse details  
-- Delete warehouses  
-- List all warehouses  
+### 🧩 Entity System
+Hierarchical data structure with clear relationships:
+- **Merchant** → has many **Warehouses**
+- **Warehouse** → has many **Categories**
+- **Category** → has many **Products**
+- **Product** → belongs to `category_id`, `warehouse_id`, and `merchant_id`
 
-### 📦 Products
-- Add, edit, delete, and list products  
+### 👥 Role-Based Access
+- **Admin**: Manage all merchants, warehouses, and users  
+- **Manager / Keeper**: Access only assigned merchant and warehouse data  
+- Role synchronization handled by `useAssignUserRole` and `useMerchants`
+
+### 📦 Product Management
+- Full CRUD: add, edit, delete products  
 - Stock management per warehouse  
+- Instant photo preview before saving  
+- Automatic UI reactivity using `window.dispatchEvent`
 
-### 🧑‍🤝‍🧑 Users
-- Add, edit, delete, and list users with persistence  
-- Dynamic routing with `/users/edit/:id`  
-- Validation using **Zod + React Hook Form**  
+### 💳 Transactions
+- Accordion-based transaction list  
+- Product detail modal for quick view  
+- Dynamic Grandtotal and customer information  
 
-### 📂 Categories & Merchants
-- Full CRUD operations  
-- Consistent UI/UX design  
+### 🧠 Data Flow & Synchronization
+- Hooks like `useProducts`, `useMerchants`, and `useWarehouses` act as data hubs  
+- Event-driven architecture ensures all components stay in sync  
+- LocalStorage serves as the **single source of truth**  
+- Easily replaceable with API integration for real backend data
 
 ---
 
-## 🛠️ Tech Stack
+## ⚙️ Tech Stack
 
-- **Frontend**: React 18, React Router, TailwindCSS  
-- **State Management**: React Hooks (`useState`, `useEffect`, `useContext`)  
-- **Validation**: [Zod](https://zod.dev/) + React Hook Form  
-- **Persistence**: LocalStorage (can be swapped with API/Database later)  
-- **UI Components**: Reusable components (e.g., `UserProfileCard`)  
+| Category | Technology |
+|-----------|-------------|
+| **Frontend** | React 18, React Router, TailwindCSS |
+| **State Management** | React Hooks (useState, useEffect, Context) |
+| **Validation** | Zod + React Hook Form |
+| **Persistence** | LocalStorage (Frontend Only) |
+| **UI/UX** | Tailwind Components + Modern Minimalist Design |
+
+---
+
+## 🏗️ Architecture Concepts
+
+### 1️⃣ Event-Driven Updates
+Uses `window.dispatchEvent` to broadcast changes between components — ensuring real-time synchronization without complex global state tools.
+
+### 2️⃣ Light vs Heavy Data
+Two data layers:
+- **Light Data** → optimized for list rendering  
+- **Heavy Data** → used for detailed views and editing  
+
+### 3️⃣ Backend-Ready
+The entire codebase is structured to easily integrate with a backend (e.g., Axios + REST API).  
+Simply replace LocalStorage handlers with API calls — no major refactor needed.
+
 
 ---
 
@@ -67,6 +96,17 @@ src/
 ├── hooks/             # Custom hooks (useAuth, etc.)
 ├── api/               # Axios config (future API integration)
 └── App.jsx            # Main routing setup
+
+src/
+├── components/         # Reusable UI components
+├── hooks/              # Custom hooks (useProducts, useMerchants, etc.)
+├── pages/              # Main app pages (Overview, Users, Transactions, etc.)
+├── utils/              # Helpers and constants
+├── assets/             # Images & icons
+└── App.jsx             # Root component
+
+
+
 📝 Milestones
 ✅ Built Warehouse Section with modal & CRUD operations
 

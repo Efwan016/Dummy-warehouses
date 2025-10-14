@@ -29,9 +29,8 @@ const AddUser = () => {
       id: Date.now(), // id unik
       ...data,
       photo:
-        imagePreview !== "/assets/images/icons/gallery-grey.svg"
-          ? imagePreview
-          : "/assets/images/icons/profile-grey.svg",
+        data.photo ||
+        "/assets/images/icons/profile-grey.svg", // fallback default photo
       roles: ["Member"], // default role
     };
 
@@ -39,6 +38,7 @@ const AddUser = () => {
 
     navigate("/users"); // redirect ke list users
   };
+
 
   return (
     <div id="main-container" className="flex flex-1">
@@ -95,9 +95,13 @@ const AddUser = () => {
                     onChange={(e) => {
                       const file = e.target.files?.[0];
                       if (file) {
-                        const previewURL = URL.createObjectURL(file);
-                        setValue("photo", previewURL);
-                        setImagePreview(previewURL);
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          const base64String = reader.result;
+                          setValue("photo", base64String);
+                          setImagePreview(base64String);
+                        };
+                        reader.readAsDataURL(file);
                       }
                     }}
                     className="absolute inset-0 opacity-0 cursor-pointer"

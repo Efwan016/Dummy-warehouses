@@ -139,19 +139,29 @@ const TransactionList = () => {
 
       {/* Product Details Modal */}
       {selectedProduct && (
-        <div className="modal flex items-center justify-center h-full fixed top-0 w-full">
-          <div onClick={() => setSelectedProduct(null)} className="absolute w-full h-full bg-[#292D32B2] cursor-pointer" />
-          <div className="modal-content flex flex-col rounded-3xl border border-monday-border p-4 gap-5 max-h-[70vh] overflow-y-auto">
-            <div className="modal-header flex items-center justify-between">
+        <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          {/* Overlay */}
+          <div
+            onClick={() => setSelectedProduct(null)}
+            className="absolute inset-0 bg-black/50 cursor-pointer z-0"
+          />
+
+          {/* Modal Card */}
+          <div className="relative z-10 bg-white rounded-3xl border border-monday-border p-6 shadow-2xl max-h-[70vh] overflow-y-auto w-[480px]">
+            <div className="flex items-center justify-between mb-4">
               <p className="font-semibold text-xl">Product Details</p>
-              <button onClick={() => setSelectedProduct(null)} className="flex size-14 rounded-full items-center justify-center bg-monday-gray-background">
-                <img src="assets/images/icons/close-circle-black.svg" className="size-6" alt="icon" />
+              <button
+                onClick={() => setSelectedProduct(null)}
+                className="flex size-10 rounded-full items-center justify-center bg-monday-gray-background"
+              >
+                <img src="assets/images/icons/box-black.svg" className="size-6" alt="close" />
               </button>
             </div>
+
             <div className="flex items-center justify-between gap-4">
               <div className="flex flex-col gap-2">
                 <p className="flex items-center gap-[6px] font-semibold text-lg">
-                  <img src={selectedProduct.category?.photo} className="size-6" alt="icon" />
+                  <img src={selectedProduct.category?.photo || "/assets/images/icons/box-black.svg" } className="size-6" alt="icon" />
                   {selectedProduct.name}
                 </p>
                 <p className="font-bold text-lg">{selectedProduct.category?.name}</p>
@@ -161,8 +171,9 @@ const TransactionList = () => {
                 <p className="font-medium text-sm text-monday-gray">About:</p>
                 <p className="font-semibold leading-[160%]">{selectedProduct.about}</p>
               </div>
+
               <div className="flex size-[100px] rounded-2xl bg-monday-gray-background items-center justify-center overflow-hidden">
-                <img src={selectedProduct.photo} className="size-full object-contain" alt="icon" />
+                <img src={selectedProduct.photo || "/assets/images/icons/box-black.svg" } className="size-full object-contain" alt="icon" />
               </div>
             </div>
           </div>

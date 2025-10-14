@@ -250,7 +250,7 @@ const OverviewMerchant = () => {
                   </p>
                 </div>
                 <img
-                  src={selectedProduct.thumbnail}
+                  src={selectedProduct.photo  || "/assets/images/icons/box-black.svg"}
                   alt={selectedProduct.name}
                   className="w-20 h-20 rounded-xl object-cover"
                 />
